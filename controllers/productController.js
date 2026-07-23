@@ -1,7 +1,7 @@
 const Product = require("../models/productModel");
 const Category = require("../models/categoryModel");
 
-// GET ALL PRODUCTS WITH POPULATED CATEGORY
+// GET ALL PRODUCTS
 const getProducts = async (req, res) => {
   try {
     const { category } = req.query;
@@ -33,10 +33,14 @@ const getProduct = async (req, res) => {
   }
 };
 
-// CREATE PRODUCT (WITH POPULATE RESPONSE 🚀)
+// CREATE PRODUCT WITH STRICT CATEGORY CHECK 🚀
 const createProduct = async (req, res) => {
   try {
     const { category_id, image, name, price, qnt, desc } = req.body;
+
+    if (!category_id || category_id === "") {
+      return res.status(400).json({ message: "Please select a valid Category!" });
+    }
 
     const newProduct = await Product.create({
       category_id,
@@ -47,7 +51,6 @@ const createProduct = async (req, res) => {
       desc,
     });
 
-    // Populate category_id before sending response back
     const populatedProduct = await Product.findById(newProduct._id).populate("category_id", "name");
 
     res.status(201).json(populatedProduct);
@@ -56,10 +59,14 @@ const createProduct = async (req, res) => {
   }
 };
 
-// UPDATE PRODUCT (WITH POPULATE RESPONSE 🚀)
+// UPDATE PRODUCT
 const updateProduct = async (req, res) => {
   try {
     const { category_id, image, name, price, qnt, desc } = req.body;
+
+    if (!category_id || category_id === "") {
+      return res.status(400).json({ message: "Please select a valid Category!" });
+    }
 
     const product = await Product.findByIdAndUpdate(
       req.params.id,
