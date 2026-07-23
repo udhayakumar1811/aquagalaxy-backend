@@ -11,7 +11,10 @@ const getProducts = async (req, res) => {
       filter.category_id = category;
     }
 
-    const products = await Product.find(filter).populate("category_id", "name");
+    const products = await Product.find(filter)
+      .populate("category_id", "name")
+      .sort({ createdAt: -1 });
+
     res.status(200).json(products);
   } catch (error) {
     res.status(500).json({ message: error.message });
@@ -33,13 +36,13 @@ const getProduct = async (req, res) => {
   }
 };
 
-// CREATE PRODUCT WITH STRICT CATEGORY CHECK 🚀
+// CREATE PRODUCT
 const createProduct = async (req, res) => {
   try {
     const { category_id, image, name, price, qnt, desc } = req.body;
 
-    if (!category_id || category_id === "") {
-      return res.status(400).json({ message: "Please select a valid Category!" });
+    if (!category_id) {
+      return res.status(400).json({ message: "Please select a valid category" });
     }
 
     const newProduct = await Product.create({
@@ -63,10 +66,6 @@ const createProduct = async (req, res) => {
 const updateProduct = async (req, res) => {
   try {
     const { category_id, image, name, price, qnt, desc } = req.body;
-
-    if (!category_id || category_id === "") {
-      return res.status(400).json({ message: "Please select a valid Category!" });
-    }
 
     const product = await Product.findByIdAndUpdate(
       req.params.id,
