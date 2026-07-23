@@ -1,91 +1,101 @@
-const Category = require("../models/categoryModel");
 const Product = require("../models/productModel");
+const Category = require("../models/categoryModel");
 
-// GET ALL CATEGORIES WITH DYNAMIC PRODUCT COUNT 🚀
-const getCategories = async (req, res) => {
+// GET ALL PRODUCTS WITH POPULATED CATEGORY NAME 🚀
+const getProducts = async (req, res) => {
   try {
-    const categories = await Category.find();
+    const { category } = req.query;
 
-    // Calculate actual product count for each category dynamically
-    const categoriesWithCount = await Promise.all(
-      categories.map(async (cat) => {
-        const count = await Product.countDocuments({ category_id: cat._id });
-        return {
-          ...cat._doc,
-          count: count, // 👈 Dynamic Product Count!
-        };
-      })
-    );
-
-    res.status(200).json(categoriesWithCount);
-  } catch (error) {
-    res.status(500).json({ message: error.message });
-  }
-};
-
-// GET SINGLE CATEGORY
-const getCategory = async (req, res) => {
-  try {
-    const category = await Category.findById(req.params.id);
-    if (!category) {
-      return res.status(404).json({ message: "Category not found" });
+    let filter = {};
+    if (category) {
+      filter.category_id = category;
     }
-    const count = await Product.countDocuments({ category_id: category._id });
-    res.status(200).json({ ...category._doc, count });
+
+    // 👈 populate("category_id", "name") thaan category name-a fetch pannum!
+    const products = await Product.find(filter).populate("category_id", "name");
+    res.status(200).json(products);
   } catch (error) {
     res.status(500).json({ message: error.message });
   }
 };
 
-// CREATE CATEGORY
-const createCategory = async (req, res) => {
+// GET SINGLE PRODUCT
+const getProduct = async (req, res) => {
   try {
-    const { name, image, isCategory } = req.body;
-    const category = await Category.create({ name, image, isCategory });
-    res.status(201).json(category);
+    const product = await Product.findById(req.params.id).populate("category_id", "name");
+
+    if (!product) {
+      return res.status(404).json({ message: "Product not found" });
+    }
+
+    res.status(200).json(product);
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+};
+
+// CREATE PRODUCT
+const createProduct = async (req, res) => {
+  try {
+    const { category_id, image, name, price, qnt, desc } = req.body;
+
+    const product = await Product.create({
+      category_id,
+      image,
+      name,
+      price,
+      qnt,
+      desc,
+    });
+
+    res.status(201).json(product);
   } catch (error) {
     res.status(400).json({ message: error.message });
   }
 };
 
-// UPDATE CATEGORY
-const updateCategory = async (req, res) => {
+// UPDATE PRODUCT
+const updateProduct = async (req, res) => {
   try {
-    const { name, image, isCategory } = req.body;
-    const category = await Category.findByIdAndUpdate(
+    const { category_id, image, name, price, qnt, desc } = req.body;
+
+    const product = await Product.findByIdAndUpdate(
       req.params.id,
-      { name, image, isCategory },
+      { category_id, image, name, price, qnt, desc },
       { new: true, runValidators: true }
     );
 
-    if (!category) {
-      return res.status(404).json({ message: "Category not found" });
+    if (!product) {
+      return res.status(404).json({ message: "Product not found" });
     }
 
-    res.status(200).json(category);
+    res.status(200).json(product);
   } catch (error) {
     res.status(400).json({ message: error.message });
   }
 };
 
-// DELETE CATEGORY
-const deleteCategory = async (req, res) => {
+// DELETE PRODUCT
+const deleteProduct = async (req, res) => {
   try {
-    const category = await Category.findById(req.params.id);
-    if (!category) {
-      return res.status(404).json({ message: "Category not found" });
+    const product = await Product.findById(req.params.id);
+
+    if (!product) {
+      return res.status(404).json({ message: "Product not found" });
     }
-    await category.deleteOne();
-    res.status(200).json({ message: "Category deleted successfully" });
+
+    await product.deleteOne();
+
+    res.status(200).json({ message: "Product deleted successfully" });
   } catch (error) {
     res.status(500).json({ message: error.message });
   }
 };
 
 module.exports = {
-  getCategories,
-  getCategory,
-  createCategory,
-  updateCategory,
-  deleteCategory,
+  getProducts,
+  getProduct,
+  createProduct,
+  updateProduct,
+  deleteProduct,
 };
