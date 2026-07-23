@@ -36,13 +36,13 @@ const getProduct = async (req, res) => {
   }
 };
 
-// CREATE PRODUCT
+// CREATE PRODUCT (WITH STRICT CATEGORY CHECK & POPULATE 🚀)
 const createProduct = async (req, res) => {
   try {
     const { category_id, image, name, price, qnt, desc } = req.body;
 
-    if (!category_id) {
-      return res.status(400).json({ message: "Please select a valid category" });
+    if (!category_id || category_id === "") {
+      return res.status(400).json({ message: "Category ID is required!" });
     }
 
     const newProduct = await Product.create({
@@ -54,6 +54,7 @@ const createProduct = async (req, res) => {
       desc,
     });
 
+    // Immediate Populate to return full object back to UI
     const populatedProduct = await Product.findById(newProduct._id).populate("category_id", "name");
 
     res.status(201).json(populatedProduct);
