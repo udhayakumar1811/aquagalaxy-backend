@@ -1,7 +1,7 @@
 const Product = require("../models/productModel");
 const Category = require("../models/categoryModel");
 
-// GET ALL PRODUCTS
+// GET ALL PRODUCTS WITH POPULATED CATEGORY NAME 🚀
 const getProducts = async (req, res) => {
   try {
     const { category } = req.query;
@@ -36,12 +36,12 @@ const getProduct = async (req, res) => {
   }
 };
 
-// CREATE PRODUCT (WITH STRICT CATEGORY CHECK & POPULATE 🚀)
+// CREATE PRODUCT WITH MANDATORY CATEGORY & POPULATION 🚀
 const createProduct = async (req, res) => {
   try {
     const { category_id, image, name, price, qnt, desc } = req.body;
 
-    if (!category_id || category_id === "") {
+    if (!category_id) {
       return res.status(400).json({ message: "Category ID is required!" });
     }
 
@@ -54,7 +54,6 @@ const createProduct = async (req, res) => {
       desc,
     });
 
-    // Immediate Populate to return full object back to UI
     const populatedProduct = await Product.findById(newProduct._id).populate("category_id", "name");
 
     res.status(201).json(populatedProduct);
