@@ -1,7 +1,7 @@
 const Product = require("../models/productModel");
-const Category = require("../models/categoryModel"); // 👈 Category Model Import
+const Category = require("../models/categoryModel");
 
-// GET ALL PRODUCTS (WITH OPTIONAL CATEGORY FILTER)
+// GET ALL PRODUCTS WITH POPULATED CATEGORY
 const getProducts = async (req, res) => {
   try {
     const { category } = req.query;
@@ -33,26 +33,13 @@ const getProduct = async (req, res) => {
   }
 };
 
-// CREATE PRODUCT (AUTO CATEGORY LINK BY NAME) 🚀
+// CREATE PRODUCT (WITH POPULATE RESPONSE 🚀)
 const createProduct = async (req, res) => {
   try {
-    const { categoryName, image, name, price, qnt, desc } = req.body;
+    const { category_id, image, name, price, qnt, desc } = req.body;
 
-    // 1. Name vachu Category Exist-a nu check panrom
-    let category = await Category.findOne({ name: categoryName });
-
-    // 2. Oru velai Category illana, Dynamic-a Pudhu Category-a create panrom
-    if (!category && categoryName) {
-      category = await Category.create({
-        name: categoryName,
-        image: image, // Default product image set aagum
-        isCategory: true,
-      });
-    }
-
-    // 3. Automatic-a Category ID-a Product kooda map panrom
-    const product = await Product.create({
-      category_id: category ? category._id : null,
+    const newProduct = await Product.create({
+      category_id,
       image,
       name,
       price,
@@ -60,13 +47,16 @@ const createProduct = async (req, res) => {
       desc,
     });
 
-    res.status(201).json(product);
+    // Populate category_id before sending response back
+    const populatedProduct = await Product.findById(newProduct._id).populate("category_id", "name");
+
+    res.status(201).json(populatedProduct);
   } catch (error) {
     res.status(400).json({ message: error.message });
   }
 };
 
-// UPDATE PRODUCT
+// UPDATE PRODUCT (WITH POPULATE RESPONSE 🚀)
 const updateProduct = async (req, res) => {
   try {
     const { category_id, image, name, price, qnt, desc } = req.body;
@@ -75,7 +65,7 @@ const updateProduct = async (req, res) => {
       req.params.id,
       { category_id, image, name, price, qnt, desc },
       { new: true, runValidators: true }
-    );
+    ).populate("category_id", "name");
 
     if (!product) {
       return res.status(404).json({ message: "Product not found" });
