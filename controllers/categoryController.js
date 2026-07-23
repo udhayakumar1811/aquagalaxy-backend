@@ -1,17 +1,18 @@
 const Category = require("../models/categoryModel");
 const Product = require("../models/productModel");
 
-// GET ALL CATEGORIES WITH DYNAMIC PRODUCT COUNT
+// GET ALL CATEGORIES WITH DYNAMIC PRODUCT COUNT 🚀
 const getCategories = async (req, res) => {
   try {
     const categories = await Category.find();
 
+    // Calculate actual product count for each category dynamically
     const categoriesWithCount = await Promise.all(
       categories.map(async (cat) => {
-        const productCount = await Product.countDocuments({ category_id: cat._id });
+        const count = await Product.countDocuments({ category_id: cat._id });
         return {
           ...cat._doc,
-          count: productCount,
+          count: count, // 👈 Dynamic Product Count!
         };
       })
     );
@@ -22,20 +23,15 @@ const getCategories = async (req, res) => {
   }
 };
 
-// GET SINGLE CATEGORY WITH DYNAMIC COUNT
+// GET SINGLE CATEGORY
 const getCategory = async (req, res) => {
   try {
     const category = await Category.findById(req.params.id);
     if (!category) {
       return res.status(404).json({ message: "Category not found" });
     }
-
-    const productCount = await Product.countDocuments({ category_id: category._id });
-
-    res.status(200).json({
-      ...category._doc,
-      count: productCount,
-    });
+    const count = await Product.countDocuments({ category_id: category._id });
+    res.status(200).json({ ...category._doc, count });
   } catch (error) {
     res.status(500).json({ message: error.message });
   }
@@ -45,12 +41,7 @@ const getCategory = async (req, res) => {
 const createCategory = async (req, res) => {
   try {
     const { name, image, isCategory } = req.body;
-    
-    const category = await Category.create({
-      name,
-      image,
-      isCategory,
-    });
+    const category = await Category.create({ name, image, isCategory });
     res.status(201).json(category);
   } catch (error) {
     res.status(400).json({ message: error.message });
@@ -66,9 +57,11 @@ const updateCategory = async (req, res) => {
       { name, image, isCategory },
       { new: true, runValidators: true }
     );
+
     if (!category) {
       return res.status(404).json({ message: "Category not found" });
     }
+
     res.status(200).json(category);
   } catch (error) {
     res.status(400).json({ message: error.message });
