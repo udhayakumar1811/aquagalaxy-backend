@@ -1,9 +1,9 @@
 const express = require("express");
 const cors = require("cors");
 const dotenv = require("dotenv");
-const path = require("path"); // 👈 Path import
+const path = require("path");
 const connectDB = require("./config/db");
-const upload = require("./middleware/uploadMiddleware"); // 👈 Upload middleware
+const upload = require("./middleware/uploadMiddleware");
 
 dotenv.config();
 connectDB();
@@ -13,15 +13,15 @@ const app = express();
 app.use(cors());
 app.use(express.json());
 
-// Make uploads folder publicly accessible for images 🚀
+// Serve static uploads folder for image access
 app.use("/uploads", express.static(path.join(__dirname, "/uploads")));
 
-// IMAGE UPLOAD API ENDPOINT 📸
+// IMAGE UPLOAD ROUTE
 app.post("/api/upload", upload.single("image"), (req, res) => {
   if (req.file) {
     res.status(200).json({
       message: "Image uploaded successfully",
-      filePath: req.file.path.replace(/\\/g, "/"), // e.g. "uploads/image-12345.jpg"
+      filePath: req.file.path.replace(/\\/g, "/"),
     });
   } else {
     res.status(400).json({ message: "No image file provided" });
