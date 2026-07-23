@@ -1,7 +1,7 @@
 const Product = require("../models/productModel");
 const Category = require("../models/categoryModel");
 
-// GET ALL PRODUCTS WITH POPULATED CATEGORY NAME 🚀
+// GET ALL PRODUCTS
 const getProducts = async (req, res) => {
   try {
     const { category } = req.query;
@@ -36,7 +36,7 @@ const getProduct = async (req, res) => {
   }
 };
 
-// CREATE PRODUCT WITH MANDATORY CATEGORY & POPULATION 🚀
+// CREATE PRODUCT (WITH POPULATE RESPONSE 🚀)
 const createProduct = async (req, res) => {
   try {
     const { category_id, image, name, price, qnt, desc } = req.body;
