@@ -1,7 +1,7 @@
 const Product = require("../models/productModel");
 const Category = require("../models/categoryModel");
 
-// GET ALL PRODUCTS
+// GET ALL PRODUCTS WITH POPULATED CATEGORY NAME 🚀
 const getProducts = async (req, res) => {
   try {
     const { category } = req.query;
@@ -36,13 +36,13 @@ const getProduct = async (req, res) => {
   }
 };
 
-// CREATE PRODUCT (WITH POPULATE RESPONSE 🚀)
+// CREATE PRODUCT WITH STRICT CATEGORY VALIDATION 🚀
 const createProduct = async (req, res) => {
   try {
     const { category_id, image, name, price, qnt, desc } = req.body;
 
-    if (!category_id) {
-      return res.status(400).json({ message: "Category ID is required!" });
+    if (!category_id || category_id === "") {
+      return res.status(400).json({ message: "Category is required!" });
     }
 
     const newProduct = await Product.create({
@@ -66,6 +66,10 @@ const createProduct = async (req, res) => {
 const updateProduct = async (req, res) => {
   try {
     const { category_id, image, name, price, qnt, desc } = req.body;
+
+    if (!category_id || category_id === "") {
+      return res.status(400).json({ message: "Category is required!" });
+    }
 
     const product = await Product.findByIdAndUpdate(
       req.params.id,
