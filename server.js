@@ -14,7 +14,8 @@ app.use(express.json());
 
 // Routes
 app.use("/api/products", require("./routes/productRoutes"));
-app.use("/api/category", require("./routes/categoryRoutes")); // 👈 NEW ROUTE ADDED
+app.use("/api/category", require("./routes/categoryRoutes"));
+app.use("/api/auth", require("./routes/authRoutes")); // 👈 NEW AUTH ROUTE ADDED
 
 app.get("/", (req, res) => {
   res.send("API Running...");
