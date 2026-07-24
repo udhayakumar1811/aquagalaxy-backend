@@ -2,14 +2,13 @@ const User = require("../models/userModel");
 const jwt = require("jsonwebtoken");
 const bcrypt = require("bcryptjs");
 
-// Generate JWT Token
 const generateToken = (id) => {
   return jwt.sign({ id }, process.env.JWT_SECRET || "aquagalaxy_secret_key", {
     expiresIn: "30d",
   });
 };
 
-// REGISTER USER
+// 1. REGISTER USER (Default role is always "user")
 const registerUser = async (req, res) => {
   try {
     const { name, email, password } = req.body;
@@ -27,12 +26,12 @@ const registerUser = async (req, res) => {
     const salt = await bcrypt.genSalt(10);
     const hashedPassword = await bcrypt.hash(password, salt);
 
-    // Create User (Default role: "user")
+    // Manual Strategy: Purely set role to "user"
     const user = await User.create({
       name,
       email,
       password: hashedPassword,
-      role: "user",
+      role: "user", // 👈 Default Always "user"
     });
 
     if (user) {
@@ -53,7 +52,7 @@ const registerUser = async (req, res) => {
   }
 };
 
-// LOGIN USER
+// 2. LOGIN USER
 const loginUser = async (req, res) => {
   try {
     const { email, password } = req.body;
@@ -67,7 +66,7 @@ const loginUser = async (req, res) => {
           _id: user._id,
           name: user.name,
           email: user.email,
-          role: user.role, // "admin" or "user"
+          role: user.role, // "user" or "admin" (DB-ல இருந்து எடுத்துத்தரும்)
         },
       });
     } else {
