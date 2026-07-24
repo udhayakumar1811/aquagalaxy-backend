@@ -1,101 +1,77 @@
-const Product = require("../models/productModel");
 const Category = require("../models/categoryModel");
+const Product = require("../models/productModel");
 
-// GET ALL PRODUCTS WITH POPULATED CATEGORY NAME 🚀
-const getProducts = async (req, res) => {
+// GET ALL CATEGORIES WITH DYNAMIC COUNT
+const getCategories = async (req, res) => {
   try {
-    const { category } = req.query;
-
-    let filter = {};
-    if (category) {
-      filter.category_id = category;
-    }
-
-    // 👈 populate("category_id", "name") thaan category name-a fetch pannum!
-    const products = await Product.find(filter).populate("category_id", "name");
-    res.status(200).json(products);
+    const categories = await Category.find();
+    const categoriesWithCount = await Promise.all(
+      categories.map(async (cat) => {
+        const count = await Product.countDocuments({ category_id: cat._id });
+        return { ...cat._doc, count };
+      })
+    );
+    res.status(200).json(categoriesWithCount);
   } catch (error) {
     res.status(500).json({ message: error.message });
   }
 };
 
-// GET SINGLE PRODUCT
-const getProduct = async (req, res) => {
+// GET SINGLE CATEGORY
+const getCategory = async (req, res) => {
   try {
-    const product = await Product.findById(req.params.id).populate("category_id", "name");
-
-    if (!product) {
-      return res.status(404).json({ message: "Product not found" });
-    }
-
-    res.status(200).json(product);
+    const category = await Category.findById(req.params.id);
+    if (!category) return res.status(404).json({ message: "Category not found" });
+    res.status(200).json(category);
   } catch (error) {
     res.status(500).json({ message: error.message });
   }
 };
 
-// CREATE PRODUCT
-const createProduct = async (req, res) => {
+// CREATE CATEGORY
+const createCategory = async (req, res) => {
   try {
-    const { category_id, image, name, price, qnt, desc } = req.body;
-
-    const product = await Product.create({
-      category_id,
-      image,
-      name,
-      price,
-      qnt,
-      desc,
-    });
-
-    res.status(201).json(product);
+    const { name, image, isCategory } = req.body;
+    const category = await Category.create({ name, image, isCategory });
+    res.status(201).json(category);
   } catch (error) {
     res.status(400).json({ message: error.message });
   }
 };
 
-// UPDATE PRODUCT
-const updateProduct = async (req, res) => {
+// UPDATE CATEGORY
+const updateCategory = async (req, res) => {
   try {
-    const { category_id, image, name, price, qnt, desc } = req.body;
-
-    const product = await Product.findByIdAndUpdate(
+    const { name, image, isCategory } = req.body;
+    const category = await Category.findByIdAndUpdate(
       req.params.id,
-      { category_id, image, name, price, qnt, desc },
+      { name, image, isCategory },
       { new: true, runValidators: true }
     );
-
-    if (!product) {
-      return res.status(404).json({ message: "Product not found" });
-    }
-
-    res.status(200).json(product);
+    if (!category) return res.status(404).json({ message: "Category not found" });
+    res.status(200).json(category);
   } catch (error) {
     res.status(400).json({ message: error.message });
   }
 };
 
-// DELETE PRODUCT
-const deleteProduct = async (req, res) => {
+// DELETE CATEGORY
+const deleteCategory = async (req, res) => {
   try {
-    const product = await Product.findById(req.params.id);
-
-    if (!product) {
-      return res.status(404).json({ message: "Product not found" });
-    }
-
-    await product.deleteOne();
-
-    res.status(200).json({ message: "Product deleted successfully" });
+    const category = await Category.findById(req.params.id);
+    if (!category) return res.status(404).json({ message: "Category not found" });
+    await category.deleteOne();
+    res.status(200).json({ message: "Category deleted successfully" });
   } catch (error) {
     res.status(500).json({ message: error.message });
   }
 };
 
+// ⚠️ Check exports! All functions MUST be exported here.
 module.exports = {
-  getProducts,
-  getProduct,
-  createProduct,
-  updateProduct,
-  deleteProduct,
+  getCategories,
+  getCategory,
+  createCategory,
+  updateCategory,
+  deleteCategory,
 };
