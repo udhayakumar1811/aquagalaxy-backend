@@ -8,7 +8,7 @@ const generateToken = (id) => {
   });
 };
 
-// 1. REGISTER USER (Default role is always "user")
+// REGISTER USER (Manual Strategy - Always saves as "user")
 const registerUser = async (req, res) => {
   try {
     const { name, email, password } = req.body;
@@ -22,16 +22,15 @@ const registerUser = async (req, res) => {
       return res.status(400).json({ message: "User already exists!" });
     }
 
-    // Hash Password
     const salt = await bcrypt.genSalt(10);
     const hashedPassword = await bcrypt.hash(password, salt);
 
-    // Manual Strategy: Purely set role to "user"
+    // Save strictly to DB
     const user = await User.create({
       name,
       email,
       password: hashedPassword,
-      role: "user", // 👈 Default Always "user"
+      role: "user",
     });
 
     if (user) {
@@ -52,7 +51,7 @@ const registerUser = async (req, res) => {
   }
 };
 
-// 2. LOGIN USER
+// LOGIN USER
 const loginUser = async (req, res) => {
   try {
     const { email, password } = req.body;
@@ -66,7 +65,7 @@ const loginUser = async (req, res) => {
           _id: user._id,
           name: user.name,
           email: user.email,
-          role: user.role, // "user" or "admin" (DB-ல இருந்து எடுத்துத்தரும்)
+          role: user.role,
         },
       });
     } else {
