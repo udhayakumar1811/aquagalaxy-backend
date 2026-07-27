@@ -1,4 +1,8 @@
 const mongoose = require("mongoose");
+const dns = require("dns");
+
+// Force IPv4 DNS lookup to prevent lookup refusal errors
+dns.setDefaultResultOrder("ipv4first");
 
 const connectDB = async () => {
   try {
