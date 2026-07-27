@@ -1,14 +1,21 @@
 const express = require("express");
 const router = express.Router();
 const { registerUser, loginUser } = require("../controllers/userController");
+const {
+  getUserProfile,
+  updateUserProfile,
+  deleteUserProfile,
+} = require("../controllers/userController");
+const { protect } = require("../middleware/authMiddleware");
 
-// Ensure functions exist before passing to router
-if (typeof registerUser === "function" && typeof loginUser === "function") {
-  router.post("/register", registerUser);
-  router.post("/signup", registerUser);
-  router.post("/login", loginUser);
-} else {
-  console.error("❌ Controller functions are not properly imported!");
-}
+// Public routes
+router.post("/register", registerUser);
+router.post("/signup", registerUser);
+router.post("/login", loginUser);
+
+// Protected Profile routes
+router.get("/profile", protect, getUserProfile);
+router.put("/profile", protect, updateUserProfile);
+router.delete("/profile", protect, deleteUserProfile);
 
 module.exports = router;

@@ -1,82 +1,58 @@
 const User = require("../models/userModel");
-const jwt = require("jsonwebtoken");
-const bcrypt = require("bcryptjs");
 
-const generateToken = (id) => {
-  return jwt.sign({ id }, process.env.JWT_SECRET || "aquagalaxy_secret_key", {
-    expiresIn: "30d",
-  });
-};
-
-// REGISTER USER (Manual Strategy - Always saves as "user")
-const registerUser = async (req, res) => {
+// 1. GET USER PROFILE
+const getUserProfile = async (req, res) => {
   try {
-    const { name, email, password } = req.body;
-
-    if (!name || !email || !password) {
-      return res.status(400).json({ message: "Please fill all fields" });
+    const user = await User.findById(req.user.id).select("-password");
+    if (!user) {
+      return res.status(404).json({ message: "User not found" });
     }
-
-    const userExists = await User.findOne({ email });
-    if (userExists) {
-      return res.status(400).json({ message: "User already exists!" });
-    }
-
-    const salt = await bcrypt.genSalt(10);
-    const hashedPassword = await bcrypt.hash(password, salt);
-
-    // Save strictly to DB
-    const user = await User.create({
-      name,
-      email,
-      password: hashedPassword,
-      role: "user",
-    });
-
-    if (user) {
-      res.status(201).json({
-        token: generateToken(user._id),
-        user: {
-          _id: user._id,
-          name: user.name,
-          email: user.email,
-          role: user.role,
-        },
-      });
-    } else {
-      res.status(400).json({ message: "Invalid user data" });
-    }
+    res.json(user);
   } catch (error) {
     res.status(500).json({ message: error.message });
   }
 };
 
-// LOGIN USER
-const loginUser = async (req, res) => {
+// 2. UPDATE USER PROFILE
+const updateUserProfile = async (req, res) => {
   try {
-    const { email, password } = req.body;
-
-    const user = await User.findOne({ email });
-
-    if (user && (await bcrypt.compare(password, user.password))) {
-      res.status(200).json({
-        token: generateToken(user._id),
-        user: {
-          _id: user._id,
-          name: user.name,
-          email: user.email,
-          role: user.role,
-        },
-      });
-    } else {
-      res.status(401).json({ message: "Invalid email or password" });
+    const user = await User.findById(req.user.id);
+    if (!user) {
+      return res.status(404).json({ message: "User not found" });
     }
+
+    user.name = req.body.name || user.name;
+    user.email = req.body.email || user.email;
+
+    const updatedUser = await user.save();
+    res.json({
+      _id: updatedUser._id,
+      name: updatedUser.name,
+      email: updatedUser.email,
+      role: updatedUser.role,
+    });
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+};
+
+// 3. DELETE USER ACCOUNT
+const deleteUserProfile = async (req, res) => {
+  try {
+    const user = await User.findById(req.user.id);
+    if (!user) {
+      return res.status(404).json({ message: "User not found" });
+    }
+
+    await User.findByIdAndDelete(req.user.id);
+    res.json({ message: "User account deleted successfully" });
   } catch (error) {
     res.status(500).json({ message: error.message });
   }
 };
 
 module.exports = {
-  registerUser,
-  loginUser,
+  getUserProfile,
+  updateUserProfile,
+  deleteUserProfile,
 };
