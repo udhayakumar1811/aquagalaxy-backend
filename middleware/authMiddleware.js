@@ -1,6 +1,7 @@
 const jwt = require("jsonwebtoken");
 const User = require("../models/userModel");
 
+// Authenticate User Token
 const protect = async (req, res, next) => {
   let token;
 
@@ -12,11 +13,14 @@ const protect = async (req, res, next) => {
       token = req.headers.authorization.split(" ")[1];
       const decoded = jwt.verify(
         token,
-        process.env.JWT_SECRET || "aquagalaxy_secret_key"
+        process.env.JWT_SECRET || "aquagalaxy_secret_key_123"
       );
 
       req.user = await User.findById(decoded.id).select("-password");
-      next();
+      if (!req.user) {
+        return res.status(401).json({ message: "User not found" });
+      }
+      return next();
     } catch (error) {
       return res.status(401).json({ message: "Not authorized, token failed" });
     }
@@ -27,4 +31,13 @@ const protect = async (req, res, next) => {
   }
 };
 
-module.exports = { protect };
+// Check if User is Admin
+const admin = (req, res, next) => {
+  if (req.user && req.user.role === "admin") {
+    next();
+  } else {
+    res.status(403).json({ message: "Not authorized as an admin" });
+  }
+};
+
+module.exports = { protect, admin };  

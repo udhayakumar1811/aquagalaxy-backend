@@ -1,25 +1,21 @@
 const express = require("express");
-
 const router = express.Router();
-
-const upload = require("../middleware/upload");
-
 const {
   getProducts,
-  getProduct,
+  getProductById,
   createProduct,
   updateProduct,
   deleteProduct,
-} = require("../controllers/productController");
+} = require("../controllers/productController"); // Check path
+const { protect, admin } = require("../middleware/authMiddleware");
 
-router.get("/", getProducts);
+router.route("/")
+  .get(getProducts)
+  .post(protect, admin, createProduct);
 
-router.get("/:id", getProduct);
-
-router.post("/", upload.single("image"), createProduct);
-
-router.put("/:id", upload.single("image"), updateProduct);
-
-router.delete("/:id", deleteProduct);
+router.route("/:id")
+  .get(getProductById)
+  .put(protect, admin, updateProduct)
+  .delete(protect, admin, deleteProduct);
 
 module.exports = router;

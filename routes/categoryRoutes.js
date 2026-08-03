@@ -2,16 +2,18 @@ const express = require("express");
 const router = express.Router();
 const {
   getCategories,
-  getCategory,
   createCategory,
   updateCategory,
   deleteCategory,
-} = require("../controllers/categoryController");
+} = require("../controllers/categoryController"); // Check path
+const { protect, admin } = require("../middleware/authMiddleware");
 
-router.get("/", getCategories);
-router.get("/:id", getCategory);
-router.post("/", createCategory);
-router.put("/:id", updateCategory);
-router.delete("/:id", deleteCategory);
+router.route("/")
+  .get(getCategories)
+  .post(protect, admin, createCategory);
+
+router.route("/:id")
+  .put(protect, admin, updateCategory)
+  .delete(protect, admin, deleteCategory);
 
 module.exports = router;
