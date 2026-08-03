@@ -6,9 +6,10 @@ const {
   createProduct,
   updateProduct,
   deleteProduct,
-} = require("../controllers/productController"); // Check path
+} = require("../controllers/productController"); // 👈 Double check this relative path
 const { protect, admin } = require("../middleware/authMiddleware");
 
+// Routes
 router.route("/")
   .get(getProducts)
   .post(protect, admin, createProduct);

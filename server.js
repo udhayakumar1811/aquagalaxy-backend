@@ -21,20 +21,20 @@ app.use(
 
 app.use(express.json());
 
-// 🚀 Make sure "uploads" directory exists
+// Create uploads directory if it doesn't exist
 const uploadDir = path.join(__dirname, "uploads");
 if (!fs.existsSync(uploadDir)) {
   fs.mkdirSync(uploadDir, { recursive: true });
 }
 
-// 🚀 Serve Static Images from uploads folder
+// Serve static uploaded files
 app.use("/uploads", express.static(path.join(__dirname, "uploads")));
 
-// 🚀 Routes
+// Routes
 app.use("/api/users", require("./routes/userRoutes"));
 app.use("/api/category", require("./routes/categoryRoutes"));
 app.use("/api/products", require("./routes/productRoutes"));
-app.use("/api/upload", require("./routes/uploadRoutes")); // 👈 MISSING UPLOAD ROUTE ADDED HERE
+app.use("/api/upload", require("./routes/uploadRoutes")); // 👈 Now this file exists!
 
 const PORT = process.env.PORT || 5000;
 app.listen(PORT, () => console.log(`🚀 Server running on port ${PORT}`));

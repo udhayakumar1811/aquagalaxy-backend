@@ -1,112 +1,96 @@
-const Product = require("../models/productModel");
-const Category = require("../models/categoryModel");
+const Product = require("../models/productModel"); // Check path correctly
 
-// GET ALL PRODUCTS WITH POPULATED CATEGORY NAME 🚀
+// @desc    Get All Products
+// @route   GET /api/products
 const getProducts = async (req, res) => {
   try {
-    const { category } = req.query;
-
-    let filter = {};
-    if (category) {
-      filter.category_id = category;
-    }
-
-    const products = await Product.find(filter)
-      .populate("category_id", "name")
-      .sort({ createdAt: -1 });
-
-    res.status(200).json(products);
+    const products = await Product.find({}).populate("category_id", "name");
+    res.json(products);
   } catch (error) {
     res.status(500).json({ message: error.message });
   }
 };
 
-// GET SINGLE PRODUCT
-const getProduct = async (req, res) => {
+// @desc    Get Product By ID
+// @route   GET /api/products/:id
+const getProductById = async (req, res) => {
   try {
     const product = await Product.findById(req.params.id).populate("category_id", "name");
-
-    if (!product) {
-      return res.status(404).json({ message: "Product not found" });
+    if (product) {
+      res.json(product);
+    } else {
+      res.status(404).json({ message: "Product not found" });
     }
-
-    res.status(200).json(product);
   } catch (error) {
     res.status(500).json({ message: error.message });
   }
 };
 
-// CREATE PRODUCT WITH STRICT CATEGORY VALIDATION 🚀
+// @desc    Create New Product
+// @route   POST /api/products
 const createProduct = async (req, res) => {
   try {
-    const { category_id, image, name, price, qnt, desc } = req.body;
-
-    if (!category_id || category_id === "") {
-      return res.status(400).json({ message: "Category is required!" });
-    }
-
-    const newProduct = await Product.create({
+    const { category_id, name, price, qnt, image, desc } = req.body;
+    const product = new Product({
       category_id,
-      image,
       name,
       price,
       qnt,
+      image,
       desc,
     });
-
-    const populatedProduct = await Product.findById(newProduct._id).populate("category_id", "name");
-
-    res.status(201).json(populatedProduct);
+    const createdProduct = await product.save();
+    res.status(201).json(createdProduct);
   } catch (error) {
     res.status(400).json({ message: error.message });
   }
 };
 
-// UPDATE PRODUCT
+// @desc    Update Product
+// @route   PUT /api/products/:id
 const updateProduct = async (req, res) => {
   try {
-    const { category_id, image, name, price, qnt, desc } = req.body;
+    const { category_id, name, price, qnt, image, desc } = req.body;
+    const product = await Product.findById(req.params.id);
 
-    if (!category_id || category_id === "") {
-      return res.status(400).json({ message: "Category is required!" });
+    if (product) {
+      product.category_id = category_id || product.category_id;
+      product.name = name || product.name;
+      product.price = price !== undefined ? price : product.price;
+      product.qnt = qnt !== undefined ? qnt : product.qnt;
+      product.image = image || product.image;
+      product.desc = desc || product.desc;
+
+      const updatedProduct = await product.save();
+      res.json(updatedProduct);
+    } else {
+      res.status(404).json({ message: "Product not found" });
     }
-
-    const product = await Product.findByIdAndUpdate(
-      req.params.id,
-      { category_id, image, name, price, qnt, desc },
-      { new: true, runValidators: true }
-    ).populate("category_id", "name");
-
-    if (!product) {
-      return res.status(404).json({ message: "Product not found" });
-    }
-
-    res.status(200).json(product);
   } catch (error) {
     res.status(400).json({ message: error.message });
   }
 };
 
-// DELETE PRODUCT
+// @desc    Delete Product
+// @route   DELETE /api/products/:id
 const deleteProduct = async (req, res) => {
   try {
     const product = await Product.findById(req.params.id);
-
-    if (!product) {
-      return res.status(404).json({ message: "Product not found" });
+    if (product) {
+      await Product.findByIdAndDelete(req.params.id);
+      res.json({ message: "Product deleted successfully" });
+    } else {
+      res.status(404).json({ message: "Product not found" });
     }
-
-    await product.deleteOne();
-
-    res.status(200).json({ message: "Product deleted successfully" });
   } catch (error) {
     res.status(500).json({ message: error.message });
   }
 };
 
+// 🎯 MUST EXPORT ALL FUNCTIONS CORRECTLY
 module.exports = {
   getProducts,
-  getProduct,
+  getProductById,
   createProduct,
   updateProduct,
   deleteProduct,
