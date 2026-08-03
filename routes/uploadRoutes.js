@@ -3,7 +3,7 @@ const multer = require("multer");
 const path = require("path");
 const router = express.Router();
 
-// Configure Multer Disk Storage
+// Storage Engine
 const storage = multer.diskStorage({
   destination(req, file, cb) {
     cb(null, "uploads/");
@@ -16,7 +16,7 @@ const storage = multer.diskStorage({
   },
 });
 
-// Validate Image File Types
+// Check File Type
 function checkFileType(file, cb) {
   const filetypes = /jpg|jpeg|png|webp/;
   const extname = filetypes.test(path.extname(file.originalname).toLowerCase());
@@ -25,19 +25,19 @@ function checkFileType(file, cb) {
   if (extname && mimetype) {
     return cb(null, true);
   } else {
-    cb(new Error("Images only! (jpg, jpeg, png, webp)"));
+    cb(new Error("Images only!"));
   }
 }
 
 const upload = multer({
   storage,
-  limits: { fileSize: 5000000 }, // 5MB limit
+  limits: { fileSize: 5000000 },
   fileFilter: function (req, file, cb) {
     checkFileType(file, cb);
   },
 });
 
-// POST /api/upload Route
+// POST /api/upload
 router.post("/", upload.single("image"), (req, res) => {
   if (!req.file) {
     return res.status(400).json({ message: "No image file uploaded" });
