@@ -1,8 +1,9 @@
 const express = require("express");
 const cors = require("cors");
 const dotenv = require("dotenv");
+const path = require("path");
+const fs = require("fs");
 
-// dotenv.config() MUST BE BEFORE connectDB() 🚀
 dotenv.config();
 
 const connectDB = require("./config/db");
@@ -10,7 +11,6 @@ connectDB();
 
 const app = express();
 
-// 🚀 Allow CORS for Vercel Frontend
 app.use(
   cors({
     origin: "*",
@@ -21,15 +21,20 @@ app.use(
 
 app.use(express.json());
 
-// Routes
+// 🚀 Make sure "uploads" directory exists
+const uploadDir = path.join(__dirname, "uploads");
+if (!fs.existsSync(uploadDir)) {
+  fs.mkdirSync(uploadDir, { recursive: true });
+}
+
+// 🚀 Serve Static Images from uploads folder
+app.use("/uploads", express.static(path.join(__dirname, "uploads")));
+
+// 🚀 Routes
 app.use("/api/users", require("./routes/userRoutes"));
 app.use("/api/category", require("./routes/categoryRoutes"));
 app.use("/api/products", require("./routes/productRoutes"));
-
-// Default Route for Health Check
-app.get("/", (req, res) => {
-  res.send("🚀 AquaGalaxy API is running smoothly!");
-});
+app.use("/api/upload", require("./routes/uploadRoutes")); // 👈 MISSING UPLOAD ROUTE ADDED HERE
 
 const PORT = process.env.PORT || 5000;
 app.listen(PORT, () => console.log(`🚀 Server running on port ${PORT}`));
