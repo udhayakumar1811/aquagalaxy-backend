@@ -25,27 +25,39 @@ function checkFileType(file, cb) {
   if (extname && mimetype) {
     return cb(null, true);
   } else {
-    cb(new Error("Images only!"));
+    cb(new Error("Images only! (jpg, jpeg, png, webp)"));
   }
 }
 
 const upload = multer({
   storage,
-  limits: { fileSize: 5000000 },
+  limits: { fileSize: 5000000 }, // 5MB limit
   fileFilter: function (req, file, cb) {
     checkFileType(file, cb);
   },
 });
 
 // POST /api/upload
-router.post("/", upload.single("image"), (req, res) => {
-  if (!req.file) {
-    return res.status(400).json({ message: "No image file uploaded" });
-  }
-  const normalizedPath = req.file.path.replace(/\\/g, "/");
-  res.status(200).json({
-    message: "Image uploaded successfully",
-    filePath: normalizedPath,
+router.post("/", (req, res) => {
+  upload.single("image")(req, res, (err) => {
+    // Multer validation or size error catching
+    if (err instanceof multer.MulterError) {
+      return res.status(400).json({ message: err.message });
+    } else if (err) {
+      return res.status(400).json({ message: err.message });
+    }
+
+    if (!req.file) {
+      return res.status(400).json({ message: "No image file uploaded" });
+    }
+
+    // Windows / Linux path backward slash-ஐ clean செய்து Return செய்யப்படுகிறது
+    const normalizedPath = req.file.path.replace(/\\/g, "/");
+
+    res.status(200).json({
+      message: "Image uploaded successfully",
+      filePath: normalizedPath,
+    });
   });
 });
 

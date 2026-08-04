@@ -31,10 +31,12 @@ if (!fs.existsSync(uploadDir)) {
 app.use("/uploads", express.static(path.join(__dirname, "uploads")));
 
 // Routes
-app.use("/api/users", require("./routes/userRoutes"));
+// Routes
+app.use("/api/auth", require("./routes/authRoutes"));     // POST /api/auth/login, /api/auth/register
+app.use("/api/users", require("./routes/userRoutes"));   // GET /api/users/profile
 app.use("/api/category", require("./routes/categoryRoutes"));
 app.use("/api/products", require("./routes/productRoutes"));
-app.use("/api/upload", require("./routes/uploadRoutes")); // 👈 Now this file exists!
+app.use("/api/upload", require("./routes/uploadRoutes"));
 
 const PORT = process.env.PORT || 5000;
 app.listen(PORT, () => console.log(`🚀 Server running on port ${PORT}`));
