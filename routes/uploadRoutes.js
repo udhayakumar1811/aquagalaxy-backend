@@ -1,46 +1,33 @@
 const express = require("express");
 const multer = require("multer");
-const path = require("path");
+const cloudinary = require("cloudinary").v2;
+const { CloudinaryStorage } = require("multer-storage-cloudinary");
 const router = express.Router();
 
-// Storage Engine
-const storage = multer.diskStorage({
-  destination(req, file, cb) {
-    cb(null, "uploads/");
-  },
-  filename(req, file, cb) {
-    cb(
-      null,
-      `${file.fieldname}-${Date.now()}${path.extname(file.originalname)}`
-    );
-  },
+// 1. Cloudinary Config Setup
+cloudinary.config({
+  cloud_name: process.env.CLOUDINARY_CLOUD_NAME || "duuxqxeh",
+  api_key: process.env.CLOUDINARY_API_KEY || "367981587735996",
+  api_secret: process.env.CLOUDINARY_API_SECRET || "3wT5RrUU514dhtfWCBb1Yy1tDQw",
 });
 
-// Check File Type
-function checkFileType(file, cb) {
-  const filetypes = /jpg|jpeg|png|webp/;
-  const extname = filetypes.test(path.extname(file.originalname).toLowerCase());
-  const mimetype = filetypes.test(file.mimetype);
-
-  if (extname && mimetype) {
-    return cb(null, true);
-  } else {
-    cb(new Error("Images only! (jpg, jpeg, png, webp)"));
-  }
-}
+// 2. Configure Cloudinary Storage Engine for Multer
+const storage = new CloudinaryStorage({
+  cloudinary: cloudinary,
+  params: {
+    folder: "aquagalaxy_uploads", // Cloudinary-ல் இந்த Folder-க்குள் Images சேமிக்கப்படும்
+    allowed_formats: ["jpg", "jpeg", "png", "webp"],
+  },
+});
 
 const upload = multer({
-  storage,
-  limits: { fileSize: 5000000 }, // 5MB limit
-  fileFilter: function (req, file, cb) {
-    checkFileType(file, cb);
-  },
+  storage: storage,
+  limits: { fileSize: 5000000 }, // 5MB Limit
 });
 
-// POST /api/upload
+// 3. POST /api/upload Route
 router.post("/", (req, res) => {
   upload.single("image")(req, res, (err) => {
-    // Multer validation or size error catching
     if (err instanceof multer.MulterError) {
       return res.status(400).json({ message: err.message });
     } else if (err) {
@@ -51,12 +38,10 @@ router.post("/", (req, res) => {
       return res.status(400).json({ message: "No image file uploaded" });
     }
 
-    // Windows / Linux path backward slash-ஐ clean செய்து Return செய்யப்படுகிறது
-    const normalizedPath = req.file.path.replace(/\\/g, "/");
-
+    // Cloudinary Secure Permanent HTTPS Image URL
     res.status(200).json({
-      message: "Image uploaded successfully",
-      filePath: normalizedPath,
+      message: "Image uploaded successfully to Cloudinary",
+      filePath: req.file.path, // req.file.path-ல் நேரடியா Cloudinary HTTPS URL இருக்கும்!
     });
   });
 });
