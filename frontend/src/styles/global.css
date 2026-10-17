@@ -1,0 +1,93 @@
+*{
+    margin:0;
+    padding:0;
+    box-sizing:border-box;
+}
+
+/* Theme variables (Section 42) — light is the default; [data-theme="dark"]
+   overrides live in styles/darkMode.css. Using CSS variables here means
+   any component that already uses these variables (or that darkMode.css
+   targets directly) switches instantly when the theme toggles. */
+:root {
+    --bg-primary: #ffffff;
+    --bg-secondary: #f8fafc;
+    --bg-card: #ffffff;
+    --text-primary: #0f172a;
+    --text-secondary: #64748b;
+    --border-color: #e2e8f0;
+    --input-bg: #ffffff;
+}
+
+[data-theme="dark"] {
+    --bg-primary: #0f172a;
+    --bg-secondary: #1e293b;
+    --bg-card: #1e293b;
+    --text-primary: #f1f5f9;
+    --text-secondary: #94a3b8;
+    --border-color: #334155;
+    --input-bg: #1e293b;
+}
+
+html {
+    overflow-x: hidden;
+    width: 100%;
+}
+
+body{
+    font-family:Arial, Helvetica, sans-serif;
+    background: var(--bg-primary);
+    color: var(--text-primary);
+    overflow-x:hidden;
+    width: 100%;
+    transition: background-color 0.2s ease, color 0.2s ease;
+}
+
+img{
+    max-width:100%;
+    display:block;
+}
+
+a{
+    text-decoration:none;
+}
+
+ul{
+    list-style:none;
+    margin:0;
+    padding:0;
+}
+
+.section-title{
+    font-size:34px;
+    font-weight:700;
+    color:#0b2c77;
+    text-align:center;
+    margin-bottom:50px;
+}
+
+.section-padding{
+    padding:80px 0;
+}
+
+/* --- Mobile responsiveness baseline (used across every page via these
+   shared utility classes) --- */
+@media (max-width: 768px) {
+    .section-title{
+        font-size: 26px;
+        margin-bottom: 30px;
+        padding: 0 16px;
+    }
+    .section-padding{
+        padding: 48px 0;
+    }
+}
+
+@media (max-width: 480px) {
+    .section-title{
+        font-size: 22px;
+        margin-bottom: 22px;
+    }
+    .section-padding{
+        padding: 36px 0;
+    }
+}
