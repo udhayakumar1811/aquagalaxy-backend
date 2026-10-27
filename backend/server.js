@@ -41,6 +41,11 @@ const devOrigins = [
   "http://127.0.0.1:5173",
   "http://localhost:3000",
   "http://127.0.0.1:3000",
+  "http://localhost:8081",
+  "http://127.0.0.1:8081",
+  "http://localhost:8082",
+  "http://127.0.0.1:8082",
+  "http://localhost:19006",
 ];
 
 // Production origins must come strictly from environment configuration (CORS_ALLOWED_ORIGINS and/or FRONTEND_URL)

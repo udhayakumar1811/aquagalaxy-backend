@@ -6,12 +6,17 @@ const { getJwtSecret } = require("../utils/generateToken");
 const protect = async (req, res, next) => {
   let token;
 
-  if (
-    req.headers.authorization &&
-    req.headers.authorization.startsWith("Bearer")
-  ) {
+  const authHeader = req.headers.authorization;
+  if (authHeader && authHeader.startsWith("Bearer")) {
     try {
-      token = req.headers.authorization.split(" ")[1];
+      const parts = authHeader.split(" ");
+      token = parts[1];
+
+      // Treat missing, blank, or stringified null/undefined as "no token"
+      if (!token || token === "null" || token === "undefined" || token.trim() === "") {
+        return res.status(401).json({ message: "Not authorized, no token" });
+      }
+
       const decoded = jwt.verify(token, getJwtSecret());
 
       req.user = await User.findById(decoded.id).select("-password");
@@ -25,24 +30,28 @@ const protect = async (req, res, next) => {
       // (claim `v`, defaulting to 0 for tokens minted before this field
       // existed) is rejected here even though it hasn't expired yet.
       if ((decoded.v || 0) !== (req.user.tokenVersion || 0)) {
-        return res.status(401).json({ message: "Not authorized, token failed" });
+        return res.status(401).json({ message: "Token expired, please login again", expired: true, code: "TOKEN_REVOKED" });
       }
       return next();
     } catch (error) {
-      return res.status(401).json({ message: "Not authorized, token failed" });
+      if (error.name === "TokenExpiredError") {
+        return res.status(401).json({ message: "Token expired, please login again", expired: true, code: "TOKEN_EXPIRED" });
+      }
+      return res.status(401).json({ message: "Not authorized, token failed", code: "TOKEN_INVALID" });
     }
   }
 
-  if (!token) {
-    return res.status(401).json({ message: "Not authorized, no token" });
-  }
+  return res.status(401).json({ message: "Not authorized, no token" });
 };
 
 // Check if User has full admin access (admin or superadmin — both are
 // full-privilege roles). For scoped roles (order_manager, product_manager,
 // etc.) use requirePermission() from middleware/rbac.js instead.
 const admin = (req, res, next) => {
-  if (req.user && (req.user.role === "admin" || req.user.role === "superadmin")) {
+  if (!req.user) {
+    return res.status(401).json({ message: "Not authorized, no token" });
+  }
+  if (req.user.role === "admin" || req.user.role === "superadmin") {
     next();
   } else {
     res.status(403).json({ message: "Not authorized as an admin" });
@@ -61,7 +70,11 @@ const optionalAuth = async (req, res, next) => {
     return next();
   }
   try {
-    const token = authHeader.split(" ")[1];
+    const parts = authHeader.split(" ");
+    const token = parts[1];
+    if (!token || token === "null" || token === "undefined" || token.trim() === "") {
+      return next();
+    }
     const decoded = jwt.verify(token, getJwtSecret());
     const user = await User.findById(decoded.id).select("-password");
     if (user && !user.isDisabled && (decoded.v || 0) === (user.tokenVersion || 0)) {
