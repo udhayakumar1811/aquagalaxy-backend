@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import { API_URL } from "../../../config";
 import { safeParseResponse } from "../../../utils/apiHandler";
+import { getValidToken } from "../../../utils/auth";
 import { FaTrash, FaPlus } from "react-icons/fa";
 
 const INDIAN_STATES = [
@@ -30,8 +31,13 @@ function AdminDeliveryRules({ token, setMessage }) {
   const [saving, setSaving] = useState(false);
 
   const fetchRules = () => {
+    const currentToken = token || getValidToken();
+    if (!currentToken) {
+      setLoading(false);
+      return;
+    }
     fetch(`${API_URL}/api/delivery/rules`, {
-      headers: { Authorization: `Bearer ${token}` },
+      headers: { Authorization: `Bearer ${currentToken}` },
     })
       .then((res) => safeParseResponse(res, "Delivery Rules"))
       .then((data) => setRules(Array.isArray(data) ? data : []))
@@ -109,7 +115,7 @@ function AdminDeliveryRules({ token, setMessage }) {
     }
   };
 
-  const inputStyle = { padding: "8px", border: "1px solid #cbd5e1", borderRadius: "6px" };
+  const inputStyle = { padding: "8px", border: "1px solid var(--border-color)", background: "var(--input-bg)", color: "var(--text-primary)", borderRadius: "6px" };
 
   return (
     <div style={{ display: "flex", flexDirection: "column", gap: "20px" }}>
@@ -180,7 +186,7 @@ function AdminDeliveryRules({ token, setMessage }) {
               )}
             </div>
           ))}
-          <button type="button" onClick={addTier} style={{ background: "#f1f5f9", border: "none", padding: "6px 10px", borderRadius: "6px", cursor: "pointer", width: "fit-content", display: "flex", alignItems: "center", gap: "6px", fontSize: "13px" }}>
+          <button type="button" onClick={addTier} style={{ background: "var(--bg-secondary)", color: "var(--text-primary)", border: "1px solid var(--border-color)", padding: "6px 10px", borderRadius: "6px", cursor: "pointer", width: "fit-content", display: "flex", alignItems: "center", gap: "6px", fontSize: "13px" }}>
             <FaPlus size={11} /> Add tier
           </button>
 
@@ -207,7 +213,7 @@ function AdminDeliveryRules({ token, setMessage }) {
             />
           )}
 
-          <button type="submit" disabled={saving} style={{ background: "#0284c7", color: "white", border: "none", padding: "10px", borderRadius: "6px", fontWeight: "600", cursor: "pointer", marginTop: "8px" }}>
+          <button type="submit" disabled={saving} style={{ background: "#0077b6", color: "white", border: "none", padding: "10px", borderRadius: "6px", fontWeight: "600", cursor: "pointer", marginTop: "8px" }}>
             {saving ? "Saving…" : "Add Rule"}
           </button>
         </form>
@@ -217,3 +223,4 @@ function AdminDeliveryRules({ token, setMessage }) {
 }
 
 export default AdminDeliveryRules;
+

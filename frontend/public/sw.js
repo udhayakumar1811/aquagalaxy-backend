@@ -1,14 +1,13 @@
 // UDHAYA AQUATICS - Production-Safe Service Worker
 // Version: 1.0.0
 
-const CACHE_NAME = 'udhaya-aquatics-v1';
+const CACHE_NAME = 'udhaya-aquatics-v2';
 
 // Static assets to pre-cache on install
 const PRECACHE_ASSETS = [
   '/',
   '/index.html',
-  '/src/styles/global.css',
-  '/src/styles/darkMode.css',
+  '/favicon.svg',
 ];
 
 // Domains and URL patterns that must NEVER be intercepted or cached

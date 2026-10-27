@@ -2,8 +2,8 @@ import { useState, useContext, useEffect, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
 import { API_URL } from "../../config";
 import { CartContext } from "../../context/CartContext";
+import { getValidToken } from "../../utils/auth";
 import Footer from "../../components/Footer/Footer";
-import "./Checkout.css";
 
 const INDIAN_STATES = [
   "Andhra Pradesh", "Arunachal Pradesh", "Assam", "Bihar", "Chhattisgarh", "Goa",
@@ -68,7 +68,7 @@ function Checkout() {
 
   // --- Load user's saved addresses for logged-in customer ---
   useEffect(() => {
-    const token = localStorage.getItem("token");
+    const token = getValidToken();
     if (token) {
       fetch(`${API_URL}/api/users/addresses`, {
         headers: { Authorization: `Bearer ${token}` },
@@ -264,7 +264,7 @@ function Checkout() {
 
   const handleRazorpayPayment = async () => {
     setLoading(true);
-    const token = localStorage.getItem("token");
+    const token = getValidToken();
 
     try {
       const scriptLoaded = await loadRazorpayScript();
@@ -313,7 +313,7 @@ function Checkout() {
           }
         },
         modal: { ondismiss: () => setLoading(false) },
-        theme: { color: "#0b1c3f" },
+        theme: { color: "#0a2540" },
       });
 
       razorpay.open();
@@ -359,7 +359,7 @@ function Checkout() {
     }
 
     setLoading(true);
-    const token = localStorage.getItem("token");
+    const token = getValidToken();
 
     const orderData = {
       orderItems: cart.map((item) => ({
@@ -490,7 +490,7 @@ function Checkout() {
 
             {savedAddresses.length > 0 && (
               <div style={{ marginBottom: "20px" }}>
-                <p style={{ fontSize: "14px", fontWeight: "600", color: "#334155", marginBottom: "10px" }}>
+                <p style={{ fontSize: "14px", fontWeight: "600", color: "var(--text-secondary)", marginBottom: "10px" }}>
                   Select from your saved addresses:
                 </p>
                 <div className="checkout-saved-addresses-grid">
@@ -511,7 +511,7 @@ function Checkout() {
                         <div className="checkout-addr-details">
                           <div style={{ display: "flex", justifyContent: "space-between", marginBottom: "4px" }}>
                             <strong>{addr.fullName}</strong>
-                            <span style={{ fontSize: "11px", fontWeight: "700", background: "#e2e8f0", padding: "2px 6px", borderRadius: "4px" }}>
+                            <span style={{ fontSize: "11px", fontWeight: "700", background: "var(--bg-secondary)", color: "var(--text-secondary)", border: "1px solid var(--border-color)", padding: "2px 6px", borderRadius: "4px" }}>
                               {addr.addressType || "Home"}
                             </span>
                           </div>
@@ -603,7 +603,7 @@ function Checkout() {
                   </div>
                 </div>
 
-                {localStorage.getItem("token") && (
+                {getValidToken() && (
                   <div style={{ display: "flex", alignItems: "center", gap: "8px", margin: "10px 0 16px" }}>
                     <input
                       type="checkbox"
@@ -612,7 +612,7 @@ function Checkout() {
                       onChange={(e) => setSaveAddressForFuture(e.target.checked)}
                       style={{ width: "16px", height: "16px" }}
                     />
-                    <label htmlFor="saveAddrCheck" style={{ margin: 0, fontSize: "13.5px", color: "#475569", cursor: "pointer" }}>
+                    <label htmlFor="saveAddrCheck" style={{ margin: 0, fontSize: "13.5px", color: "var(--text-secondary)", cursor: "pointer" }}>
                       Save this address to My Addresses for future orders
                     </label>
                   </div>
@@ -801,12 +801,12 @@ function Checkout() {
               </p>
             )}
 
-            <div style={{ fontSize: "12px", color: "#64748b", margin: "14px 0", lineHeight: "1.5" }}>
+            <div style={{ fontSize: "12px", color: "var(--text-secondary)", margin: "14px 0", lineHeight: "1.5" }}>
               By placing this order, you agree to UDHAYA AQUATICS&apos;s{" "}
-              <a href="/terms-and-conditions" target="_blank" rel="noopener noreferrer" style={{ color: "#0b1c3f", textDecoration: "underline" }}>Terms &amp; Conditions</a>,{" "}
-              <a href="/privacy-policy" target="_blank" rel="noopener noreferrer" style={{ color: "#0b1c3f", textDecoration: "underline" }}>Privacy Policy</a>,{" "}
-              <a href="/shipping-policy" target="_blank" rel="noopener noreferrer" style={{ color: "#0b1c3f", textDecoration: "underline" }}>Shipping Policy</a>, and{" "}
-              <a href="/refund-policy" target="_blank" rel="noopener noreferrer" style={{ color: "#0b1c3f", textDecoration: "underline" }}>Return &amp; Refund Policy</a>.
+              <a href="/terms-and-conditions" target="_blank" rel="noopener noreferrer" className="checkout-legal-link">Terms &amp; Conditions</a>,{" "}
+              <a href="/privacy-policy" target="_blank" rel="noopener noreferrer" className="checkout-legal-link">Privacy Policy</a>,{" "}
+              <a href="/shipping-policy" target="_blank" rel="noopener noreferrer" className="checkout-legal-link">Shipping Policy</a>, and{" "}
+              <a href="/refund-policy" target="_blank" rel="noopener noreferrer" className="checkout-legal-link">Return &amp; Refund Policy</a>.
             </div>
 
             <button type="submit" disabled={loading || uploadingScreenshot} className="place-order-btn">
@@ -839,19 +839,19 @@ function Checkout() {
                     placeholder="Have a coupon code?"
                     value={couponCode}
                     onChange={(e) => setCouponCode(e.target.value.toUpperCase())}
-                    style={{ flex: 1, padding: "8px 10px", border: "1px solid #cbd5e1", borderRadius: "6px", fontSize: "13px" }}
+                    style={{ flex: 1, padding: "8px 10px", border: "1px solid var(--border-color)", background: "var(--input-bg)", color: "var(--text-primary)", borderRadius: "6px", fontSize: "13px" }}
                   />
                   <button
                     type="button"
                     onClick={handleApplyCoupon}
                     disabled={applyingCoupon || !couponCode.trim()}
-                    style={{ padding: "8px 14px", background: "#0b1c3f", color: "white", border: "none", borderRadius: "6px", fontSize: "13px", cursor: "pointer" }}
+                    style={{ padding: "8px 14px", background: "var(--primary)", color: "white", border: "none", borderRadius: "6px", fontSize: "13px", cursor: "pointer", fontWeight: "600" }}
                   >
                     {applyingCoupon ? "..." : "Apply"}
                   </button>
                 </div>
               ) : (
-                <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", background: "#dcfce7", padding: "8px 12px", borderRadius: "6px" }}>
+                <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", background: "rgba(16, 185, 129, 0.12)", border: "1px solid rgba(16, 185, 129, 0.3)", padding: "8px 12px", borderRadius: "6px" }}>
                   <span style={{ color: "#166534", fontWeight: "600", fontSize: "13px" }}>✅ {couponCode} applied</span>
                   <button type="button" onClick={handleRemoveCoupon} style={{ background: "none", border: "none", color: "#dc2626", cursor: "pointer", fontSize: "13px", fontWeight: "600" }}>
                     Remove
@@ -895,3 +895,4 @@ function Checkout() {
 }
 
 export default Checkout;
+

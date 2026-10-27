@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import { API_URL, getImageUrl } from "../../config";
+import { getValidToken, clearAuthSession } from "../../utils/auth";
 import { 
   FaUser, 
   FaBoxOpen, 
@@ -19,7 +20,6 @@ import {
 import { useNavigate, Link } from "react-router-dom";
 import Footer from "../../components/Footer/Footer";
 import { getWishlist } from "../../utils/wishlist";
-import "./MyProfile.css";
 
 const INDIAN_STATES = [
   "Tamil Nadu", "Kerala", "Karnataka", "Andhra Pradesh", "Telangana",
@@ -79,7 +79,7 @@ function MyProfile() {
 
   useEffect(() => {
     const fetchProfileData = async () => {
-      const token = localStorage.getItem("token");
+      const token = getValidToken();
       if (!token) {
         navigate("/login");
         return;
@@ -139,9 +139,7 @@ function MyProfile() {
   }, [navigate]);
 
   const handleLogout = () => {
-    localStorage.removeItem("token");
-    localStorage.removeItem("user");
-    navigate("/login");
+    clearAuthSession(true);
   };
 
   // --- SAVE PERSONAL DETAILS ---
@@ -152,7 +150,7 @@ function MyProfile() {
     setSavingProfile(true);
 
     try {
-      const token = localStorage.getItem("token");
+      const token = getValidToken();
       const res = await fetch(`${API_URL}/api/users/profile`, {
         method: "PUT",
         headers: {
@@ -239,7 +237,7 @@ function MyProfile() {
     setAddressSubmitting(true);
 
     try {
-      const token = localStorage.getItem("token");
+      const token = getValidToken();
       const method = editingAddressId ? "PUT" : "POST";
       const url = editingAddressId
         ? `${API_URL}/api/users/addresses/${editingAddressId}`
@@ -274,7 +272,7 @@ function MyProfile() {
   const handleDeleteAddress = async (id) => {
     if (!window.confirm("Are you sure you want to delete this address?")) return;
     try {
-      const token = localStorage.getItem("token");
+      const token = getValidToken();
       const res = await fetch(`${API_URL}/api/users/addresses/${id}`, {
         method: "DELETE",
         headers: { Authorization: `Bearer ${token}` },
@@ -291,7 +289,7 @@ function MyProfile() {
 
   const handleSetDefaultAddress = async (id) => {
     try {
-      const token = localStorage.getItem("token");
+      const token = getValidToken();
       const res = await fetch(`${API_URL}/api/users/addresses/${id}/default`, {
         method: "PUT",
         headers: { Authorization: `Bearer ${token}` },
@@ -323,7 +321,7 @@ function MyProfile() {
 
     setSavingPassword(true);
     try {
-      const token = localStorage.getItem("token");
+      const token = getValidToken();
       const res = await fetch(`${API_URL}/api/users/profile`, {
         method: "PUT",
         headers: {
@@ -367,7 +365,7 @@ function MyProfile() {
 
     setCancellingId(orderId);
     try {
-      const token = localStorage.getItem("token");
+      const token = getValidToken();
       const res = await fetch(`${API_URL}/api/orders/${orderId}/cancel`, {
         method: "PUT",
         headers: {
@@ -424,13 +422,13 @@ function MyProfile() {
           <style>
             body { font-family: 'Segoe UI', Arial, sans-serif; padding: 40px; color: #333; }
             .invoice-box { max-width: 800px; margin: auto; padding: 30px; border: 1px solid #eee; box-shadow: 0 0 10px rgba(0, 0, 0, 0.15); border-radius: 8px; }
-            h1 { color: #0099cc; text-align: center; margin-bottom: 5px; }
-            .header-info { display: flex; justify-content: space-between; margin-top: 30px; border-bottom: 2px solid #0099cc; padding-bottom: 20px; }
+            h1 { color: #0077b6; text-align: center; margin-bottom: 5px; }
+            .header-info { display: flex; justify-content: space-between; margin-top: 30px; border-bottom: 2px solid #0077b6; padding-bottom: 20px; }
             table { width: 100%; border-collapse: collapse; margin-top: 30px; }
             th, td { padding: 12px; text-align: left; border-bottom: 1px solid #ddd; }
             th { background-color: #f8fafc; color: #1e293b; font-weight: 700; }
             .total-section { text-align: right; margin-top: 20px; font-size: 15px; }
-            .total-section .grand { font-size: 18px; font-weight: 800; color: #ff6b00; margin-top: 8px; }
+            .total-section .grand { font-size: 18px; font-weight: 800; color: #ff4d2d; margin-top: 8px; }
             .footer { margin-top: 40px; text-align: center; color: #777; font-size: 12px; }
           </style>
         </head>
@@ -611,7 +609,7 @@ function MyProfile() {
               {/* Add / Edit Address Form */}
               {showAddressForm && (
                 <div className="address-form-modal">
-                  <h3 style={{ marginTop: 0, marginBottom: "16px", color: "#0f172a" }}>
+                  <h3 style={{ marginTop: 0, marginBottom: "16px", color: "var(--text-primary)" }}>
                     {editingAddressId ? "Edit Delivery Address" : "Add New Delivery Address"}
                   </h3>
                   <form onSubmit={handleSaveAddress}>
@@ -759,7 +757,7 @@ function MyProfile() {
 
               {/* Address Cards List */}
               {addresses.length === 0 ? (
-                <div style={{ textAlign: "center", padding: "40px 20px", color: "#64748b" }}>
+                <div style={{ textAlign: "center", padding: "40px 20px", color: "var(--text-secondary)" }}>
                   <FaMapMarkerAlt style={{ fontSize: "36px", color: "#94a3b8", marginBottom: "12px" }} />
                   <p>No saved addresses found. Add an address for rapid checkout!</p>
                 </div>
@@ -815,7 +813,7 @@ function MyProfile() {
               ) : orders.length === 0 ? (
                 <div style={{ textAlign: "center", padding: "40px 20px" }}>
                   <FaBoxOpen style={{ fontSize: "40px", color: "#94a3b8", marginBottom: "12px" }} />
-                  <p style={{ color: "#64748b" }}>You haven't placed any orders yet.</p>
+                  <p style={{ color: "var(--text-secondary)" }}>You haven't placed any orders yet.</p>
                   <Link to="/shop" className="btn-add-address" style={{ display: "inline-flex", textDecoration: "none", marginTop: "12px" }}>
                     Explore Ornamental Fish
                   </Link>
@@ -949,8 +947,8 @@ function MyProfile() {
                         alt={item.name}
                         style={{ width: "100%", height: "130px", objectFit: "cover", borderRadius: "8px", marginBottom: "10px" }}
                       />
-                      <h4 style={{ margin: "6px 0", fontSize: "14px", color: "#0f172a" }}>{item.name}</h4>
-                      <p style={{ margin: "4px 0 12px", color: "#0099cc", fontWeight: "700" }}>₹{item.discountPrice ?? item.price}</p>
+                      <h4 style={{ margin: "6px 0", fontSize: "14px", color: "var(--text-primary)" }}>{item.name}</h4>
+                      <p style={{ margin: "4px 0 12px", color: "#0077b6", fontWeight: "700" }}>₹{item.discountPrice ?? item.price}</p>
                       <Link to={`/shop/${item._id}`} className="btn-addr-sm" style={{ textDecoration: "none", display: "inline-block" }}>
                         View Product
                       </Link>

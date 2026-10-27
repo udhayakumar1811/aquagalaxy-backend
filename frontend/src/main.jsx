@@ -2,8 +2,6 @@ import { StrictMode } from 'react';
 import ReactDOM from 'react-dom/client';
 import App from './App.jsx';
 import './index.css';
-import './styles/global.css';
-import './styles/darkMode.css';
 import { BrowserRouter } from 'react-router-dom';
 import { CartProvider } from './context/CartContext.jsx';
 import { ThemeProvider } from './context/ThemeContext.jsx';

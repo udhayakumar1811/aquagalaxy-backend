@@ -19,93 +19,104 @@ function Wishlist() {
 
   return (
     <>
-    <div style={{ padding: "40px 20px", maxWidth: "1200px", margin: "0 auto", minHeight: "60vh" }}>
-      <h1 style={{ textAlign: "center", color: "#0b1c3f", marginBottom: "30px", fontWeight: "800" }}>Your Wishlist</h1>
+      <div className="max-w-6xl mx-auto px-4 py-12 min-h-screen">
+        <h1 className="text-2xl sm:text-3xl font-extrabold text-slate-900 dark:text-white mb-8 text-center tracking-tight">
+          Your Wishlist
+        </h1>
 
-      {message && (
-        <div style={{
-          position: "fixed", bottom: "20px", right: "20px", background: "#0b1c3f", color: "#fff",
-          padding: "12px 20px", borderRadius: "8px", zIndex: 1000, boxShadow: "0 4px 12px rgba(0,0,0,0.15)", fontWeight: "600"
-        }}>
-          {message}
-        </div>
-      )}
+        {message && (
+          <div className="fixed bottom-6 right-6 z-50 bg-slate-900 text-white px-5 py-3 rounded-xl shadow-2xl text-sm font-semibold border border-slate-700 animate-bounce">
+            {message}
+          </div>
+        )}
 
-      {wishlistItems.length === 0 ? (
-        <div style={{ textAlign: "center", padding: "50px 0" }}>
-          <p style={{ color: "#64748b", fontSize: "16px", marginBottom: "20px" }}>
-            You haven't saved any items yet. Browse the shop and tap the heart icon on a product to save it here.
-          </p>
-          <Link to="/shop" style={{
-            background: "#0284c7", color: "#fff", padding: "10px 25px", borderRadius: "8px", textDecoration: "none", fontWeight: "600"
-          }}>
-            Browse Shop
-          </Link>
-        </div>
-      ) : (
-        <div style={{
-          display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(250px, 1fr))", gap: "25px", justifyContent: "center"
-        }}>
-          {wishlistItems.map((item) => {
-            const itemId = item._id || item.id;
-            return (
-              <div key={itemId} style={{
-                background: "#fff", border: "1px solid #e2e8f0", borderRadius: "12px", overflow: "hidden",
-                boxShadow: "0 2px 8px rgba(0,0,0,0.04)", display: "flex", flexDirection: "column", position: "relative"
-              }}>
-                <button 
-                  onClick={() => removeFromWishlist(itemId)}
-                  style={{
-                    position: "absolute", top: "10px", right: "10px", background: "rgba(0,0,0,0.6)", color: "#fff",
-                    border: "none", width: "30px", height: "30px", borderRadius: "50%", cursor: "pointer",
-                    display: "flex", alignItems: "center", justifyContent: "center", zIndex: 2
-                  }}
-                  title="Remove"
+        {wishlistItems.length === 0 ? (
+          <div className="text-center py-16 px-6 bg-slate-50 dark:bg-slate-800/40 rounded-3xl border border-slate-200 dark:border-slate-700 max-w-lg mx-auto">
+            <p className="text-slate-600 dark:text-slate-300 text-sm sm:text-base leading-relaxed mb-6">
+              You haven't saved any items yet. Browse the shop and tap the heart icon on a product to save it here.
+            </p>
+            <Link 
+              to="/shop" 
+              className="inline-flex items-center gap-2 px-6 py-3 rounded-xl bg-[#0077b6] hover:bg-sky-600 text-white font-bold text-sm shadow-md transition-all duration-200"
+            >
+              Browse Shop &rarr;
+            </Link>
+          </div>
+        ) : (
+          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
+            {wishlistItems.map((item) => {
+              const itemId = item._id || item.id;
+              const hasDiscount = item.discountPrice != null && item.discountPrice < item.price;
+              const isOutOfStock = item.qnt === 0;
+
+              return (
+                <div 
+                  key={itemId} 
+                  className="group relative bg-white dark:bg-slate-800 rounded-2xl border border-slate-200 dark:border-slate-700 p-4 shadow-sm hover:shadow-xl hover:-translate-y-1 transition-all duration-300 flex flex-col justify-between"
                 >
-                  <FaTrash size={12} />
-                </button>
+                  <button
+                    type="button"
+                    onClick={() => removeFromWishlist(itemId)}
+                    className="absolute top-6 right-6 z-10 w-8 h-8 rounded-full bg-white/90 dark:bg-slate-700 shadow-md text-slate-400 hover:text-red-500 hover:scale-110 flex items-center justify-center transition-all cursor-pointer"
+                    title="Remove from Wishlist"
+                    aria-label="Remove item"
+                  >
+                    <FaTrash size={12} />
+                  </button>
 
-                <div style={{ width: "100%", height: "220px", background: "#f1f5f9", overflow: "hidden" }}>
-                  <img src={getImageUrl(item.image)} alt={item.name} style={{ width: "100%", height: "100%", objectFit: "cover" }} />
-                </div>
-
-                <div style={{ padding: "15px", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-                  <div>
-                    <h3 style={{ fontSize: "16px", fontWeight: "700", color: "#1e293b", margin: "0 0 5px 0" }}>{item.name}</h3>
-                    {item.discountPrice != null && item.discountPrice < item.price ? (
-                      <div>
-                        <span style={{ fontSize: "18px", fontWeight: "800", color: "#ff6b00" }}>₹{item.discountPrice}</span>{" "}
-                        <span style={{ textDecoration: "line-through", color: "#94a3b8", fontSize: "14px", marginLeft: "6px" }}>₹{item.price}</span>
-                      </div>
-                    ) : (
-                      <span style={{ fontSize: "18px", fontWeight: "800", color: "#ff6b00" }}>₹{item.price}</span>
-                    )}
+                  <div className="relative aspect-square rounded-xl overflow-hidden bg-slate-50 dark:bg-slate-900/50 mb-3 flex items-center justify-center">
+                    <Link to={`/shop/${itemId}`} className="w-full h-full">
+                      <img 
+                        src={getImageUrl(item.image)} 
+                        alt={item.name} 
+                        loading="lazy" 
+                        className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                      />
+                    </Link>
                   </div>
 
-                  <button 
-                    onClick={() => {
-                      const result = addToCart(item);
-                      setMessage(result.success ? "🛒 Added to Cart Successfully!" : result.message);
-                      setTimeout(() => setMessage(""), 2500);
-                    }}
-                    disabled={item.qnt === 0}
-                    style={{
-                      background: item.qnt === 0 ? "#94a3b8" : "#0b1c3f", color: "#fff", border: "none", padding: "8px 12px", borderRadius: "6px",
-                      cursor: item.qnt === 0 ? "not-allowed" : "pointer", display: "flex", alignItems: "center", gap: "6px", fontSize: "13px"
-                    }}
-                  >
-                    <FaShoppingCart /> {item.qnt === 0 ? "Out of Stock" : "Buy"}
-                  </button>
+                  <div className="flex flex-col flex-grow justify-between">
+                    <div>
+                      <Link to={`/shop/${itemId}`}>
+                        <h3 className="text-sm font-bold text-slate-900 dark:text-white group-hover:text-sky-500 line-clamp-1 transition-colors text-left mb-1.5" title={item.name}>
+                          {item.name}
+                        </h3>
+                      </Link>
+                      <div className="flex items-center gap-2 mb-3 text-left">
+                        {hasDiscount ? (
+                          <>
+                            <span className="text-base font-extrabold text-[#ff4d2d]">₹{item.discountPrice}</span>
+                            <span className="text-xs line-through text-slate-400">₹{item.price}</span>
+                          </>
+                        ) : (
+                          <span className="text-base font-extrabold text-[#ff4d2d]">₹{item.price}</span>
+                        )}
+                      </div>
+                    </div>
+
+                    <button
+                      type="button"
+                      onClick={() => {
+                        const result = addToCart(item);
+                        setMessage(result.success ? "🛒 Added to Cart Successfully!" : result.message);
+                        setTimeout(() => setMessage(""), 2500);
+                      }}
+                      disabled={isOutOfStock}
+                      className="w-full py-2.5 rounded-xl bg-[#ff4d2d] hover:bg-orange-600 disabled:bg-slate-200 dark:disabled:bg-slate-700 disabled:text-slate-400 text-white font-bold text-xs flex items-center justify-center gap-2 transition-colors cursor-pointer disabled:cursor-not-allowed shadow-sm"
+                    >
+                      <FaShoppingCart size={13} /> {isOutOfStock ? "Out of Stock" : "Buy"}
+                    </button>
+                  </div>
                 </div>
-              </div>
-            );
-          })}
-        </div>
-      )}
-    </div>
-    <Footer />
+              );
+            })}
+          </div>
+        )}
+      </div>
+      <Footer />
     </>
   );
 }
 
 export default Wishlist;
+

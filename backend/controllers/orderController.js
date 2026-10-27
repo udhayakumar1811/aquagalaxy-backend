@@ -171,6 +171,9 @@ const addOrderItems = async (req, res) => {
     }
   } catch (error) {
     console.error("Order Creation Error:", error);
+    if (error.message && (error.message.startsWith("Insufficient stock") || error.message.includes("coupon") || error.message.includes("Coupon"))) {
+      return res.status(400).json({ message: error.message });
+    }
     res.status(400).json({ message: process.env.NODE_ENV === "production" ? "Something went wrong. Please try again." : (error.message || "Server Error") });
   }
 };

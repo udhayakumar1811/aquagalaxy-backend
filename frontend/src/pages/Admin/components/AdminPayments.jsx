@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { API_URL } from "../../../config";
 import { safeParseResponse } from "../../../utils/apiHandler";
+import { getValidToken } from "../../../utils/auth";
 import { FaCheck, FaTimes, FaImage } from "react-icons/fa";
 
 // Admin panel to approve/reject manually-submitted UTR payments.
@@ -15,10 +16,12 @@ function AdminPayments({ orders, token, onOrderUpdated, setMessage }) {
   // plain public URL exists for it. This fetches a freshly-signed,
   // authorization-checked URL from the backend each time it's viewed.
   const handleViewScreenshot = async (orderId) => {
+    const currentToken = token || getValidToken();
+    if (!currentToken) return;
     setLoadingScreenshotFor(orderId);
     try {
       const res = await fetch(`${API_URL}/api/orders/${orderId}/payment-screenshot`, {
-        headers: { Authorization: `Bearer ${token}` },
+        headers: { Authorization: `Bearer ${currentToken}` },
       });
       const data = await safeParseResponse(res, "Payment Screenshot");
       setScreenshotPreview(data.url);
@@ -76,7 +79,7 @@ function AdminPayments({ orders, token, onOrderUpdated, setMessage }) {
   return (
     <div className="panel-card">
       <h2>Payment Verification</h2>
-      <p style={{ color: "#64748b", fontSize: "14px", marginBottom: "20px" }}>
+      <p style={{ color: "var(--text-secondary)", fontSize: "14px", marginBottom: "20px" }}>
         Orders paid via UPI or Bank Transfer stay "Pending Verification" until you check the UTR
         against your bank/UPI statement and approve or reject here.
       </p>
@@ -86,7 +89,7 @@ function AdminPayments({ orders, token, onOrderUpdated, setMessage }) {
       ) : (
         <div style={{ display: "flex", flexDirection: "column", gap: "12px" }}>
           {pendingOrders.map((order) => (
-            <div key={order._id} style={{ border: "1px solid #e2e8f0", borderRadius: "8px", padding: "16px", display: "flex", justifyContent: "space-between", flexWrap: "wrap", gap: "12px" }}>
+            <div key={order._id} style={{ border: "1px solid var(--border-color)", background: "var(--bg-card)", borderRadius: "8px", padding: "16px", display: "flex", justifyContent: "space-between", flexWrap: "wrap", gap: "12px" }}>
               <div>
                 <strong>{order.orderNumber}</strong> — {order.shippingAddress?.fullName}
                 <div style={{ fontSize: "13px", color: "#64748b", marginTop: "4px" }}>
@@ -99,7 +102,7 @@ function AdminPayments({ orders, token, onOrderUpdated, setMessage }) {
                   <button
                     onClick={() => handleViewScreenshot(order._id)}
                     disabled={loadingScreenshotFor === order._id}
-                    style={{ marginTop: "6px", background: "#f1f5f9", border: "none", padding: "4px 10px", borderRadius: "4px", fontSize: "12px", cursor: "pointer", display: "flex", alignItems: "center", gap: "6px" }}
+                    style={{ marginTop: "6px", background: "var(--bg-secondary)", color: "var(--text-primary)", border: "1px solid var(--border-color)", padding: "4px 10px", borderRadius: "4px", fontSize: "12px", cursor: "pointer", display: "flex", alignItems: "center", gap: "6px" }}
                   >
                     <FaImage /> {loadingScreenshotFor === order._id ? "Loading…" : "View screenshot"}
                   </button>
@@ -171,3 +174,4 @@ function AdminPayments({ orders, token, onOrderUpdated, setMessage }) {
 }
 
 export default AdminPayments;
+

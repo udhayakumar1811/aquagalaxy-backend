@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import { API_URL } from "../../../config";
 import { safeParseResponse } from "../../../utils/apiHandler";
+import { getValidToken } from "../../../utils/auth";
 
 // Admin-editable business settings — nothing here should ever be hardcoded
 // in source code (Section 48/58). WhatsApp number, UPI ID, bank details,
@@ -11,8 +12,13 @@ function AdminSettings({ token, setMessage }) {
   const [saving, setSaving] = useState(false);
 
   useEffect(() => {
+    const currentToken = token || getValidToken();
+    if (!currentToken) {
+      setLoading(false);
+      return;
+    }
     fetch(`${API_URL}/api/settings/admin`, {
-      headers: { Authorization: `Bearer ${token}` },
+      headers: { Authorization: `Bearer ${currentToken}` },
     })
       .then((res) => safeParseResponse(res, "Settings"))
       .then((data) => setSettings(data))
@@ -41,13 +47,15 @@ function AdminSettings({ token, setMessage }) {
   };
 
   const handleSave = async (section) => {
+    const currentToken = token || getValidToken();
+    if (!currentToken) return;
     setSaving(true);
     try {
       const res = await fetch(`${API_URL}/api/settings/admin`, {
         method: "PUT",
         headers: {
           "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`,
+          Authorization: `Bearer ${currentToken}`,
         },
         body: JSON.stringify({ [section]: settings[section] }),
       });
@@ -63,9 +71,9 @@ function AdminSettings({ token, setMessage }) {
 
   if (loading || !settings) return <div className="panel-card">Loading settings…</div>;
 
-  const inputStyle = { width: "100%", padding: "10px", border: "1px solid #cbd5e1", borderRadius: "6px", marginBottom: "12px" };
-  const labelStyle = { display: "block", fontSize: "13px", fontWeight: "600", color: "#475569", marginBottom: "4px" };
-  const saveBtnStyle = { background: "#0284c7", color: "white", border: "none", padding: "10px 18px", borderRadius: "6px", fontWeight: "600", cursor: "pointer" };
+  const inputStyle = { width: "100%", padding: "10px", border: "1px solid var(--border-color)", background: "var(--input-bg)", color: "var(--text-primary)", borderRadius: "6px", marginBottom: "12px" };
+  const labelStyle = { display: "block", fontSize: "13px", fontWeight: "600", color: "var(--text-secondary)", marginBottom: "4px" };
+  const saveBtnStyle = { background: "#0077b6", color: "white", border: "none", padding: "10px 18px", borderRadius: "6px", fontWeight: "600", cursor: "pointer" };
 
   return (
     <div style={{ display: "flex", flexDirection: "column", gap: "20px" }}>
@@ -234,3 +242,4 @@ function AdminSettings({ token, setMessage }) {
 }
 
 export default AdminSettings;
+

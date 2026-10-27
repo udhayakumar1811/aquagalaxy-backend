@@ -1,10 +1,9 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { API_URL } from "../../config";
 import { Link } from "react-router-dom";
 import { ADMIN_TIER_ROLES } from "../../constants/roles";
 import { FaEye, FaEyeSlash, FaSignInAlt } from "react-icons/fa";
 import udhayaLogo from "../../assets/udhaya-logo.png";
-import "./Auth.css";
 
 function Login() {
   const [identifier, setIdentifier] = useState("");
@@ -12,11 +11,25 @@ function Login() {
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
   const [errorMsg, setErrorMsg] = useState("");
+  const [infoMsg, setInfoMsg] = useState("");
+
+  useEffect(() => {
+    try {
+      const params = new URLSearchParams(window.location.search);
+      if (params.get("sessionExpired")) {
+        const msg = params.get("msg");
+        setInfoMsg(msg || "Your session has expired. Please log in again.");
+      }
+    } catch {
+      // ignore
+    }
+  }, []);
 
   const handleLogin = async (e) => {
     e.preventDefault();
     setLoading(true);
     setErrorMsg("");
+    setInfoMsg("");
 
     try {
       const baseUrl = API_URL ? API_URL.replace(/\/$/, "") : "";
@@ -40,6 +53,7 @@ function Login() {
             role: data.role,
           })
         );
+        window.dispatchEvent(new Event("auth-changed"));
 
         // ADMIN CHECK & REDIRECT LOGIC
         if (ADMIN_TIER_ROLES.includes(data.role)) {
@@ -68,6 +82,12 @@ function Login() {
         </Link>
         <h2 className="auth-title">Welcome Back</h2>
         <p className="auth-subtitle">Login to UDHAYA AQUATICS account</p>
+
+        {infoMsg && (
+          <div style={{ background: "#eff6ff", color: "#1d4ed8", border: "1px solid #bfdbfe", padding: "10px 14px", borderRadius: "8px", marginBottom: "16px", fontSize: "14px", fontWeight: "500" }}>
+            {infoMsg}
+          </div>
+        )}
 
         {errorMsg && <div className="auth-error">{errorMsg}</div>}
 
@@ -114,7 +134,7 @@ function Login() {
           <div style={{ textAlign: "right", marginTop: "-6px" }}>
             <Link
               to="/forgot-password"
-              style={{ fontSize: "13px", color: "#0099cc", textDecoration: "none", fontWeight: "600" }}
+              style={{ fontSize: "13px", color: "#0077b6", textDecoration: "none", fontWeight: "600" }}
             >
               Forgot Password?
             </Link>

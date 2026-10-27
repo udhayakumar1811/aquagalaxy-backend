@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import { API_URL } from "../../../config";
 import { safeParseResponse } from "../../../utils/apiHandler";
+import { getValidToken } from "../../../utils/auth";
 
 const ACTION_LABELS = {
   "product.created": "Product Created",
@@ -23,9 +24,14 @@ function AdminAuditLogs({ token }) {
   const [filter, setFilter] = useState("");
 
   const fetchLogs = () => {
+    const currentToken = token || getValidToken();
+    if (!currentToken) {
+      setLoading(false);
+      return;
+    }
     setLoading(true);
     const params = filter ? `?action=${encodeURIComponent(filter)}` : "";
-    fetch(`${API_URL}/api/admin/audit-logs${params}`, { headers: { Authorization: `Bearer ${token}` } })
+    fetch(`${API_URL}/api/admin/audit-logs${params}`, { headers: { Authorization: `Bearer ${currentToken}` } })
       .then((res) => safeParseResponse(res, "Audit Logs"))
       .then((data) => setLogs(Array.isArray(data) ? data : []))
       .catch((err) => console.error("Error fetching audit logs:", err.message))
@@ -81,3 +87,4 @@ function AdminAuditLogs({ token }) {
 }
 
 export default AdminAuditLogs;
+

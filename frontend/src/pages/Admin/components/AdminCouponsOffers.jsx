@@ -1,6 +1,7 @@
 import { useState, useEffect, useCallback } from "react";
 import { API_URL } from "../../../config";
 import { safeParseResponse } from "../../../utils/apiHandler";
+import { getValidToken } from "../../../utils/auth";
 import { FaTrash } from "react-icons/fa";
 
 const emptyCoupon = {
@@ -28,14 +29,18 @@ function AdminCouponsOffers({ token, categories, products, setMessage }) {
   const [savingOffer, setSavingOffer] = useState(false);
 
   const fetchCoupons = useCallback(() => {
-    fetch(`${API_URL}/api/coupons/admin`, { headers: { Authorization: `Bearer ${token}` } })
+    const currentToken = token || getValidToken();
+    if (!currentToken) return;
+    fetch(`${API_URL}/api/coupons/admin`, { headers: { Authorization: `Bearer ${currentToken}` } })
       .then((r) => safeParseResponse(r, "Coupons"))
       .then((d) => setCoupons(Array.isArray(d) ? d : []))
       .catch((err) => console.error("Error fetching coupons:", err.message));
   }, [token]);
 
   const fetchOffers = useCallback(() => {
-    fetch(`${API_URL}/api/offers/admin`, { headers: { Authorization: `Bearer ${token}` } })
+    const currentToken = token || getValidToken();
+    if (!currentToken) return;
+    fetch(`${API_URL}/api/offers/admin`, { headers: { Authorization: `Bearer ${currentToken}` } })
       .then((r) => safeParseResponse(r, "Offers"))
       .then((d) => setOffers(Array.isArray(d) ? d : []))
       .catch((err) => console.error("Error fetching offers:", err.message));
@@ -46,7 +51,7 @@ function AdminCouponsOffers({ token, categories, products, setMessage }) {
     fetchOffers(); 
   }, [fetchCoupons, fetchOffers]);
 
-  const inputStyle = { padding: "8px", border: "1px solid #cbd5e1", borderRadius: "6px" };
+  const inputStyle = { padding: "8px", border: "1px solid var(--border-color)", background: "var(--input-bg)", color: "var(--text-primary)", borderRadius: "6px" };
 
   const handleCreateCoupon = async (e) => {
     e.preventDefault();
@@ -140,8 +145,36 @@ function AdminCouponsOffers({ token, categories, products, setMessage }) {
   return (
     <div className="panel-card">
       <div style={{ display: "flex", gap: "10px", marginBottom: "20px" }}>
-        <button onClick={() => setSubTab("coupons")} style={{ padding: "8px 16px", borderRadius: "6px", border: "none", cursor: "pointer", fontWeight: "600", background: subTab === "coupons" ? "#0b1c3f" : "#f1f5f9", color: subTab === "coupons" ? "white" : "#334155" }}>Coupons</button>
-        <button onClick={() => setSubTab("offers")} style={{ padding: "8px 16px", borderRadius: "6px", border: "none", cursor: "pointer", fontWeight: "600", background: subTab === "offers" ? "#0b1c3f" : "#f1f5f9", color: subTab === "offers" ? "white" : "#334155" }}>Offers</button>
+        <button
+          type="button"
+          onClick={() => setSubTab("coupons")}
+          style={{
+            padding: "8px 16px",
+            borderRadius: "6px",
+            cursor: "pointer",
+            fontWeight: "600",
+            background: subTab === "coupons" ? "#0077b6" : "var(--bg-secondary)",
+            color: subTab === "coupons" ? "white" : "var(--text-secondary)",
+            border: subTab === "coupons" ? "1px solid #0077b6" : "1px solid var(--border-color)",
+          }}
+        >
+          Coupons
+        </button>
+        <button
+          type="button"
+          onClick={() => setSubTab("offers")}
+          style={{
+            padding: "8px 16px",
+            borderRadius: "6px",
+            cursor: "pointer",
+            fontWeight: "600",
+            background: subTab === "offers" ? "#0077b6" : "var(--bg-secondary)",
+            color: subTab === "offers" ? "white" : "var(--text-secondary)",
+            border: subTab === "offers" ? "1px solid #0077b6" : "1px solid var(--border-color)",
+          }}
+        >
+          Offers
+        </button>
       </div>
 
       {subTab === "coupons" && (
@@ -193,7 +226,7 @@ function AdminCouponsOffers({ token, categories, products, setMessage }) {
               <input type="checkbox" checked={couponForm.freeDelivery} onChange={(e) => setCouponForm({ ...couponForm, freeDelivery: e.target.checked })} />
               Also gives free delivery
             </label>
-            <button type="submit" disabled={savingCoupon} style={{ background: "#0284c7", color: "white", border: "none", padding: "10px", borderRadius: "6px", fontWeight: "600", cursor: "pointer" }}>
+            <button type="submit" disabled={savingCoupon} style={{ background: "#0077b6", color: "white", border: "none", padding: "10px", borderRadius: "6px", fontWeight: "600", cursor: "pointer" }}>
               {savingCoupon ? "Saving…" : "Create Coupon"}
             </button>
           </form>
@@ -257,7 +290,7 @@ function AdminCouponsOffers({ token, categories, products, setMessage }) {
               <input type="checkbox" checked={offerForm.freeDelivery} onChange={(e) => setOfferForm({ ...offerForm, freeDelivery: e.target.checked })} />
               Also gives free delivery
             </label>
-            <button type="submit" disabled={savingOffer} style={{ background: "#0284c7", color: "white", border: "none", padding: "10px", borderRadius: "6px", fontWeight: "600", cursor: "pointer" }}>
+            <button type="submit" disabled={savingOffer} style={{ background: "#0077b6", color: "white", border: "none", padding: "10px", borderRadius: "6px", fontWeight: "600", cursor: "pointer" }}>
               {savingOffer ? "Saving…" : "Create Offer"}
             </button>
           </form>
@@ -268,3 +301,4 @@ function AdminCouponsOffers({ token, categories, products, setMessage }) {
 }
 
 export default AdminCouponsOffers;
+

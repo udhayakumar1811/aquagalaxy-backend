@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import { API_URL } from "../../../config";
 import { safeParseResponse } from "../../../utils/apiHandler";
+import { getValidToken } from "../../../utils/auth";
 
 const RANGES = [
   { value: "today", label: "Today" },
@@ -11,11 +12,11 @@ const RANGES = [
   { value: "custom", label: "Custom range" },
 ];
 
-function MetricCard({ label, value, color = "#0b1c3f" }) {
+function MetricCard({ label, value, color }) {
   return (
-    <div style={{ background: "white", border: "1px solid #e2e8f0", borderRadius: "10px", padding: "16px", flex: "1 1 160px", minWidth: "160px" }}>
-      <div style={{ fontSize: "13px", color: "#64748b", marginBottom: "6px" }}>{label}</div>
-      <div style={{ fontSize: "24px", fontWeight: "800", color }}>{value}</div>
+    <div className="stat-card" style={{ flex: "1 1 160px", minWidth: "160px" }}>
+      <div className="stat-title">{label}</div>
+      <div className="stat-value" style={color ? { color } : {}}>{value}</div>
     </div>
   );
 }
@@ -26,15 +27,15 @@ function MetricCard({ label, value, color = "#0b1c3f" }) {
 function BarList({ items, valueKey, labelKey, formatValue = (v) => v }) {
   const max = Math.max(...items.map((i) => i[valueKey]), 1);
   return (
-    <div style={{ display: "flex", flexDirection: "column", gap: "8px" }}>
+    <div style={{ display: "flex", flexDirection: "column", gap: "10px" }}>
       {items.map((item, i) => (
         <div key={i}>
-          <div style={{ display: "flex", justifyContent: "space-between", fontSize: "13px", marginBottom: "3px" }}>
+          <div style={{ display: "flex", justifyContent: "space-between", fontSize: "13px", marginBottom: "4px" }}>
             <span>{item[labelKey]}</span>
-            <span style={{ fontWeight: "600" }}>{formatValue(item[valueKey])}</span>
+            <span style={{ fontWeight: "700" }}>{formatValue(item[valueKey])}</span>
           </div>
-          <div style={{ background: "#f1f5f9", borderRadius: "4px", height: "8px" }}>
-            <div style={{ background: "#0284c7", height: "8px", borderRadius: "4px", width: `${(item[valueKey] / max) * 100}%` }} />
+          <div style={{ background: "rgba(0, 0, 0, 0.06)", borderRadius: "4px", height: "8px", overflow: "hidden" }}>
+            <div style={{ background: "#0077b6", height: "8px", borderRadius: "4px", width: `${(item[valueKey] / max) * 100}%` }} />
           </div>
         </div>
       ))}
@@ -51,13 +52,18 @@ function AdminAnalytics({ token }) {
   const [loading, setLoading] = useState(true);
 
   const fetchAnalytics = () => {
+    const currentToken = token || getValidToken();
+    if (!currentToken) {
+      setLoading(false);
+      return;
+    }
     setLoading(true);
     const params = new URLSearchParams({ range });
     if (range === "custom" && customFrom && customTo) {
       params.set("from", customFrom);
       params.set("to", customTo);
     }
-    fetch(`${API_URL}/api/admin/analytics?${params}`, { headers: { Authorization: `Bearer ${token}` } })
+    fetch(`${API_URL}/api/admin/analytics?${params}`, { headers: { Authorization: `Bearer ${currentToken}` } })
       .then((res) => safeParseResponse(res, "Analytics"))
       .then(setData)
       .catch((err) => console.error("Error fetching analytics:", err.message))
@@ -72,15 +78,22 @@ function AdminAnalytics({ token }) {
   return (
     <div style={{ display: "flex", flexDirection: "column", gap: "20px" }}>
       <div className="panel-card">
-        <h2>Analytics</h2>
-        <div style={{ display: "flex", gap: "8px", flexWrap: "wrap", marginTop: "10px", marginBottom: "10px" }}>
+        <h2>Analytics Overview</h2>
+        <div style={{ display: "flex", gap: "8px", flexWrap: "wrap", marginTop: "10px", marginBottom: "12px" }}>
           {RANGES.map((r) => (
             <button
               key={r.value}
+              type="button"
               onClick={() => setRange(r.value)}
               style={{
-                padding: "6px 14px", borderRadius: "6px", border: "none", cursor: "pointer", fontSize: "13px", fontWeight: "600",
-                background: range === r.value ? "#0b1c3f" : "#f1f5f9", color: range === r.value ? "white" : "#334155",
+                padding: "7px 15px",
+                borderRadius: "6px",
+                cursor: "pointer",
+                fontSize: "13px",
+                fontWeight: "600",
+                background: range === r.value ? "#0077b6" : "var(--bg-secondary)",
+                border: range === r.value ? "1px solid #0077b6" : "1px solid var(--border-color)",
+                color: range === r.value ? "#ffffff" : "var(--text-primary)",
               }}
             >
               {r.label}
@@ -88,60 +101,60 @@ function AdminAnalytics({ token }) {
           ))}
         </div>
         {range === "custom" && (
-          <div style={{ display: "flex", gap: "8px", alignItems: "center", flexWrap: "wrap" }}>
+          <div style={{ display: "flex", gap: "8px", alignItems: "center", flexWrap: "wrap", marginTop: "8px" }}>
             <input type="date" value={customFrom} onChange={(e) => setCustomFrom(e.target.value)} style={{ padding: "6px 10px", border: "1px solid #cbd5e1", borderRadius: "6px" }} />
             <span>to</span>
             <input type="date" value={customTo} onChange={(e) => setCustomTo(e.target.value)} style={{ padding: "6px 10px", border: "1px solid #cbd5e1", borderRadius: "6px" }} />
-            <button onClick={fetchAnalytics} style={{ padding: "6px 14px", background: "#0284c7", color: "white", border: "none", borderRadius: "6px", cursor: "pointer" }}>Apply</button>
+            <button type="button" onClick={fetchAnalytics} style={{ padding: "6px 14px", background: "#0077b6", color: "white", border: "none", borderRadius: "6px", cursor: "pointer", fontWeight: "600" }}>Apply</button>
           </div>
         )}
       </div>
 
       {loading || !data ? (
-        <div className="panel-card">Loading…</div>
+        <div className="panel-card">Loading analytics…</div>
       ) : (
         <>
-          <div style={{ display: "flex", flexWrap: "wrap", gap: "12px" }}>
-            <MetricCard label="Total Revenue" value={`₹${data.totals.totalRevenue}`} color="#16a34a" />
-            <MetricCard label="Total Orders" value={data.totals.totalOrders} />
-            <MetricCard label="Paid Orders" value={data.totals.paidOrders} color="#16a34a" />
-            <MetricCard label="Pending Payments" value={data.totals.pendingPayments} color="#b45309" />
-            <MetricCard label="Cancelled" value={data.totals.cancelledOrders} color="#dc2626" />
-            <MetricCard label="Delivered" value={data.totals.deliveredOrders} color="#1d4ed8" />
-            <MetricCard label="Total Customers" value={data.totals.totalCustomers} />
-            <MetricCard label="New Customers" value={data.totals.newCustomers} color="#7c3aed" />
+          <div style={{ display: "flex", flexWrap: "wrap", gap: "14px" }}>
+            <MetricCard label="Total Revenue" value={`₹${(data.totals?.totalRevenue || 0).toLocaleString("en-IN")}`} color="#16a34a" />
+            <MetricCard label="Total Orders" value={data.totals?.totalOrders || 0} />
+            <MetricCard label="Paid Orders" value={data.totals?.paidOrders || 0} color="#16a34a" />
+            <MetricCard label="Pending Payments" value={data.totals?.pendingPayments || 0} color="#b45309" />
+            <MetricCard label="Cancelled" value={data.totals?.cancelledOrders || 0} color="#dc2626" />
+            <MetricCard label="Delivered" value={data.totals?.deliveredOrders || 0} color="#0284c7" />
+            <MetricCard label="Total Customers" value={data.totals?.totalCustomers || 0} />
+            <MetricCard label="New Customers" value={data.totals?.newCustomers || 0} color="#7c3aed" />
           </div>
 
-          <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(280px, 1fr))", gap: "16px" }}>
+          <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(300px, 1fr))", gap: "18px" }}>
             <div className="panel-card">
               <h3>Revenue by Date</h3>
-              <BarList items={data.revenueByDate} valueKey="revenue" labelKey="date" formatValue={(v) => `₹${v}`} />
+              <BarList items={data.revenueByDate || []} valueKey="revenue" labelKey="date" formatValue={(v) => `₹${v.toLocaleString("en-IN")}`} />
             </div>
             <div className="panel-card">
               <h3>Revenue by Category</h3>
-              <BarList items={data.revenueByCategory} valueKey="revenue" labelKey="category" formatValue={(v) => `₹${v}`} />
+              <BarList items={data.revenueByCategory || []} valueKey="revenue" labelKey="category" formatValue={(v) => `₹${v.toLocaleString("en-IN")}`} />
             </div>
             <div className="panel-card">
               <h3>Top Selling Products</h3>
-              <BarList items={data.topSellingProducts} valueKey="quantitySold" labelKey="name" />
+              <BarList items={data.topSellingProducts || []} valueKey="quantitySold" labelKey="name" />
             </div>
             <div className="panel-card">
               <h3>Order Status Distribution</h3>
-              <BarList items={data.statusDistribution} valueKey="count" labelKey="status" />
+              <BarList items={data.statusDistribution || []} valueKey="count" labelKey="status" />
             </div>
             <div className="panel-card">
               <h3>Payment Method Stats</h3>
-              <BarList items={data.paymentMethodStats} valueKey="count" labelKey="method" />
+              <BarList items={data.paymentMethodStats || []} valueKey="count" labelKey="method" />
             </div>
             <div className="panel-card">
               <h3>Low Stock Products</h3>
-              {data.lowStockProducts.length === 0 ? (
+              {(!data.lowStockProducts || data.lowStockProducts.length === 0) ? (
                 <p style={{ color: "#94a3b8", fontSize: "13px" }}>Nothing low on stock. 🎉</p>
               ) : (
                 <ul style={{ margin: 0, paddingLeft: "18px", fontSize: "13px" }}>
                   {data.lowStockProducts.map((p) => (
                     <li key={p._id} style={{ color: p.qnt === 0 ? "#dc2626" : "#b45309", marginBottom: "4px" }}>
-                      {p.name} — {p.qnt} left
+                      <strong>{p.name}</strong> — {p.qnt} left
                     </li>
                   ))}
                 </ul>
@@ -155,3 +168,4 @@ function AdminAnalytics({ token }) {
 }
 
 export default AdminAnalytics;
+

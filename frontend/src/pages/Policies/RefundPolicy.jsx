@@ -1,6 +1,5 @@
 import Seo from "../../components/Seo/Seo";
 import Footer from "../../components/Footer/Footer";
-import "./Policies.css";
 
 function RefundPolicy() {
   return (

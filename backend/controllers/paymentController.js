@@ -287,7 +287,7 @@ const verifyRazorpayPayment = async (req, res) => {
     res.status(result.alreadyProcessed ? 200 : 201).json(result.order);
   } catch (error) {
     if (error instanceof FinalizeError || error instanceof CouponLimitError) {
-      return res.status(error.statusCode).json({ message: process.env.NODE_ENV === "production" ? "Something went wrong. Please try again." : error.message });
+      return res.status(error.statusCode || 400).json({ message: error.message });
     }
     console.error("Razorpay Verify Error:", error);
     res.status(500).json({ message: "Payment verification failed. Please contact support." });

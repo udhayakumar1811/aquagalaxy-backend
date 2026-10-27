@@ -162,6 +162,9 @@ const loginUser = async (req, res) => {
       : await bcrypt.compare(password, await DUMMY_HASH_PROMISE).then(() => false);
 
     if (user && passwordMatches) {
+      if (user.isDisabled) {
+        return res.status(403).json({ message: "This account has been disabled. Please contact support." });
+      }
       if (user.failedLoginAttempts > 0 || user.lockUntil) {
         await resetFailedAttempts(user._id);
       }

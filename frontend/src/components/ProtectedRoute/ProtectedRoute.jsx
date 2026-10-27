@@ -1,5 +1,6 @@
 import { Navigate } from "react-router-dom";
 import { ADMIN_TIER_ROLES } from "../../constants/roles";
+import { getValidToken, getAuthUser } from "../../utils/auth";
 
 /**
  * Wrap a route element with this to require login (and optionally an admin-tier role).
@@ -9,9 +10,8 @@ import { ADMIN_TIER_ROLES } from "../../constants/roles";
  *   <Route path="/admin" element={<ProtectedRoute adminOnly><Dashboard /></ProtectedRoute>} />
  */
 function ProtectedRoute({ children, adminOnly = false }) {
-  const token = localStorage.getItem("token");
-  const userStr = localStorage.getItem("user");
-  const user = userStr ? JSON.parse(userStr) : null;
+  const token = getValidToken();
+  const user = getAuthUser();
 
   if (!token || !user) {
     return <Navigate to="/login" replace />;

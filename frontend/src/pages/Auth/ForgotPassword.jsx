@@ -3,7 +3,6 @@ import { API_URL } from "../../config";
 import { Link, useNavigate } from "react-router-dom";
 import { FaEye, FaEyeSlash, FaMobileAlt, FaCheckCircle, FaLock } from "react-icons/fa";
 import udhayaLogo from "../../assets/udhaya-logo.png";
-import "./Auth.css";
 
 function ForgotPassword() {
   const navigate = useNavigate();
@@ -185,7 +184,7 @@ function ForgotPassword() {
             <div className="auth-input-group">
               <label>Registered Mobile Number</label>
               <div style={{ display: "flex", gap: "8px" }}>
-                <span style={{ padding: "12px 14px", background: "#f1f5f9", borderRadius: "8px", fontWeight: "600", color: "#475569", border: "1px solid #cbd5e1", display: "flex", alignItems: "center" }}>
+                <span className="auth-phone-prefix">
                   +91
                 </span>
                 <input
@@ -246,7 +245,7 @@ function ForgotPassword() {
                 type="button"
                 onClick={handleSendOtp}
                 disabled={resendCooldown > 0 || loading}
-                style={{ background: "none", border: "none", color: resendCooldown > 0 ? "#94a3b8" : "#0099cc", fontWeight: "600", cursor: resendCooldown > 0 ? "not-allowed" : "pointer", fontSize: "13px" }}
+                style={{ background: "none", border: "none", color: resendCooldown > 0 ? "#94a3b8" : "#0077b6", fontWeight: "600", cursor: resendCooldown > 0 ? "not-allowed" : "pointer", fontSize: "13px" }}
               >
                 {resendCooldown > 0 ? `Resend in ${resendCooldown}s` : "Resend OTP"}
               </button>
@@ -335,3 +334,4 @@ function ForgotPassword() {
 }
 
 export default ForgotPassword;
+

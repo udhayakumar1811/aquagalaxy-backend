@@ -2,7 +2,6 @@ import { useState } from "react";
 import Footer from "../../components/Footer/Footer";
 import { FaMapMarkerAlt, FaPhoneAlt, FaEnvelope, FaWhatsapp, FaClock, FaUserTie } from "react-icons/fa";
 import { API_URL } from "../../config";
-import "./Contact.css";
 
 function Contact() {
   const [form, setForm] = useState({ name: "", email: "", phone: "", message: "" });
@@ -50,55 +49,59 @@ function Contact() {
 
   return (
     <>
-      <div className="contact-page">
-        <h1 className="section-title">Get In Touch</h1>
-        <p style={{ textAlign: "center", color: "#64748b", maxWidth: "600px", margin: "-10px auto 30px" }}>
-          Have questions about fish health, aquarium setups, or shipping? Reach out to us directly or fill in the form below.
-        </p>
+      <div className="max-w-5xl mx-auto px-4 py-12 min-h-screen">
+        <div className="text-center mb-10">
+          <h1 className="text-3xl sm:text-4xl font-extrabold text-slate-900 dark:text-white mb-2 tracking-tight">
+            Get In Touch
+          </h1>
+          <p className="text-sm sm:text-base text-slate-500 dark:text-slate-400 max-w-xl mx-auto">
+            Have questions about fish health, aquarium setups, or shipping? Reach out to us directly or fill in the form below.
+          </p>
+        </div>
 
-        <div className="contact-wrapper">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-8 items-start">
           {/* Left side business info panel */}
-          <div className="contact-info-panel">
-            <div className="contact-info-item">
-              <FaUserTie className="contact-info-icon" />
+          <div className="bg-slate-50 dark:bg-slate-800/60 border border-slate-200 dark:border-slate-700 rounded-2xl p-6 sm:p-8 space-y-6">
+            <div className="flex items-start gap-4">
+              <FaUserTie className="text-xl text-sky-500 mt-1 flex-shrink-0" />
               <div>
-                <h4>Business &amp; Proprietor</h4>
-                <p><strong>UDHAYA AQUATICS</strong></p>
-                <p style={{ fontSize: "13px", color: "#64748b" }}>Proprietor: UDHAYAKUMAR</p>
+                <h4 className="text-sm font-bold text-slate-900 dark:text-white">Business &amp; Proprietor</h4>
+                <p className="text-sm text-slate-700 dark:text-slate-200 font-semibold">UDHAYA AQUATICS</p>
+                <p className="text-xs text-slate-400">Proprietor: UDHAYAKUMAR</p>
               </div>
             </div>
 
-            <div className="contact-info-item">
-              <FaMapMarkerAlt className="contact-info-icon" />
+            <div className="flex items-start gap-4">
+              <FaMapMarkerAlt className="text-xl text-sky-500 mt-1 flex-shrink-0" />
               <div>
-                <h4>Store Location</h4>
-                <p>Rajapalayam, Virudhunagar District</p>
-                <p style={{ fontSize: "13px", color: "#64748b" }}>Tamil Nadu, India - 626117</p>
+                <h4 className="text-sm font-bold text-slate-900 dark:text-white">Store Location</h4>
+                <p className="text-sm text-slate-700 dark:text-slate-200">Rajapalayam, Virudhunagar District</p>
+                <p className="text-xs text-slate-400">Tamil Nadu, India - 626117</p>
               </div>
             </div>
 
-            <div className="contact-info-item">
-              <FaPhoneAlt className="contact-info-icon" />
+            <div className="flex items-start gap-4">
+              <FaPhoneAlt className="text-xl text-sky-500 mt-1 flex-shrink-0" />
               <div>
-                <h4>Phone Support</h4>
-                <p>
-                  <a href="tel:6381582969" style={{ color: "inherit", textDecoration: "none" }}>
+                <h4 className="text-sm font-bold text-slate-900 dark:text-white">Phone Support</h4>
+                <p className="text-sm">
+                  <a href="tel:6381582969" className="text-slate-700 dark:text-slate-200 hover:text-sky-500 transition-colors">
                     +91 63815 82969
                   </a>
                 </p>
               </div>
             </div>
 
-            <div className="contact-info-item">
-              <FaWhatsapp className="contact-info-icon" style={{ color: "#25D366" }} />
+            <div className="flex items-start gap-4">
+              <FaWhatsapp className="text-xl text-emerald-500 mt-1 flex-shrink-0" />
               <div>
-                <h4>WhatsApp Support</h4>
-                <p>
+                <h4 className="text-sm font-bold text-slate-900 dark:text-white">WhatsApp Support</h4>
+                <p className="text-sm">
                   <a
                     href="https://wa.me/916381582969?text=Hello%20UDHAYA%20AQUATICS%2C%20I%20have%20an%20enquiry"
                     target="_blank"
                     rel="noopener noreferrer"
-                    style={{ color: "#16a34a", fontWeight: "600", textDecoration: "none" }}
+                    className="text-emerald-600 dark:text-emerald-400 font-semibold hover:underline"
                   >
                     +91 63815 82969 (Chat Now)
                   </a>
@@ -106,82 +109,90 @@ function Contact() {
               </div>
             </div>
 
-            <div className="contact-info-item">
-              <FaEnvelope className="contact-info-icon" />
+            <div className="flex items-start gap-4">
+              <FaEnvelope className="text-xl text-sky-500 mt-1 flex-shrink-0" />
               <div>
-                <h4>Email Support</h4>
-                <p>
-                  <a href="mailto:udhaya.aqua.pets@gmail.com" style={{ color: "inherit", textDecoration: "none" }}>
+                <h4 className="text-sm font-bold text-slate-900 dark:text-white">Email Support</h4>
+                <p className="text-sm">
+                  <a href="mailto:udhaya.aqua.pets@gmail.com" className="text-slate-700 dark:text-slate-200 hover:text-sky-500 transition-colors break-all">
                     udhaya.aqua.pets@gmail.com
                   </a>
                 </p>
               </div>
             </div>
 
-            <div className="contact-info-item">
-              <FaClock className="contact-info-icon" />
+            <div className="flex items-start gap-4">
+              <FaClock className="text-xl text-sky-500 mt-1 flex-shrink-0" />
               <div>
-                <h4>Business Hours</h4>
-                <p>7:00 AM – 9:00 PM</p>
-                <p style={{ fontSize: "13px", color: "#64748b" }}>Monday – Sunday (All 7 Days)</p>
+                <h4 className="text-sm font-bold text-slate-900 dark:text-white">Business Hours</h4>
+                <p className="text-sm text-slate-700 dark:text-slate-200">7:00 AM – 9:00 PM</p>
+                <p className="text-xs text-slate-400">Monday – Sunday (All 7 Days)</p>
               </div>
             </div>
           </div>
 
           {/* Right side form */}
-          <form className="contact-form" onSubmit={handleSubmit}>
+          <form className="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-2xl p-6 sm:p-8 shadow-sm space-y-4" onSubmit={handleSubmit}>
             {submitted && (
-              <p className="contact-success-msg" style={{ color: "#16a34a", fontWeight: "600", marginBottom: "15px" }}>
+              <p className="p-3 rounded-lg bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-200 dark:border-emerald-800 text-emerald-700 dark:text-emerald-300 text-sm font-semibold">
                 Thanks for reaching out! We'll get back to you soon.
               </p>
             )}
 
             {error && (
-              <p style={{ color: "#dc2626", fontWeight: "600", marginBottom: "15px" }}>
+              <p className="p-3 rounded-lg bg-red-50 dark:bg-red-950/40 border border-red-200 dark:border-red-800 text-red-700 dark:text-red-300 text-sm font-semibold">
                 {error}
               </p>
             )}
 
-            <div className="contact-form-group">
-              <label>Name</label>
+            <div className="space-y-1.5">
+              <label className="block text-xs font-bold uppercase tracking-wider text-slate-600 dark:text-slate-300">Name</label>
               <input
                 type="text"
                 name="name"
                 value={form.name}
                 onChange={handleChange}
                 required
+                className="w-full px-4 py-2.5 rounded-xl border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-900 text-slate-900 dark:text-white text-sm focus:ring-2 focus:ring-sky-500 outline-none transition-all"
               />
             </div>
-            <div className="contact-form-group">
-              <label>Email</label>
+            <div className="space-y-1.5">
+              <label className="block text-xs font-bold uppercase tracking-wider text-slate-600 dark:text-slate-300">Email</label>
               <input
                 type="email"
                 name="email"
                 value={form.email}
                 onChange={handleChange}
                 required
+                className="w-full px-4 py-2.5 rounded-xl border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-900 text-slate-900 dark:text-white text-sm focus:ring-2 focus:ring-sky-500 outline-none transition-all"
               />
             </div>
-            <div className="contact-form-group">
-              <label>Phone Number</label>
+            <div className="space-y-1.5">
+              <label className="block text-xs font-bold uppercase tracking-wider text-slate-600 dark:text-slate-300">Phone Number</label>
               <input
                 type="text"
                 name="phone"
                 value={form.phone}
                 onChange={handleChange}
+                className="w-full px-4 py-2.5 rounded-xl border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-900 text-slate-900 dark:text-white text-sm focus:ring-2 focus:ring-sky-500 outline-none transition-all"
               />
             </div>
-            <div className="contact-form-group">
-              <label>Message</label>
+            <div className="space-y-1.5">
+              <label className="block text-xs font-bold uppercase tracking-wider text-slate-600 dark:text-slate-300">Message</label>
               <textarea
                 name="message"
                 rows="5"
                 value={form.message}
                 onChange={handleChange}
                 required
+                className="w-full px-4 py-2.5 rounded-xl border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-900 text-slate-900 dark:text-white text-sm focus:ring-2 focus:ring-sky-500 outline-none transition-all resize-y"
               ></textarea>
             </div>
-            <button type="submit" className="contact-submit-btn" disabled={loading}>
+            <button 
+              type="submit" 
+              className="w-full py-3 rounded-xl bg-[#0077b6] hover:bg-[#005f92] text-white font-bold text-sm shadow-md hover:shadow-lg transition-all duration-200 cursor-pointer disabled:opacity-50" 
+              disabled={loading}
+            >
               {loading ? "Sending..." : "Send Message"}
             </button>
           </form>

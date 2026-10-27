@@ -71,55 +71,48 @@ function TopSelling() {
   });
 
   return (
-    <section style={{ padding: "60px 20px", backgroundColor: "#fff6f3", textAlign: "center" }}>
-      <div style={{ maxWidth: "1200px", margin: "0 auto" }}>
-        
+    <section className="py-16 px-4 bg-white dark:bg-slate-900 transition-colors">
+      <div className="max-w-7xl mx-auto">
         {message && (
-          <div style={{
-            position: "fixed", bottom: "20px", right: "20px", background: "#0b1c3f", color: "#fff",
-            padding: "12px 20px", borderRadius: "8px", zIndex: 1000, boxShadow: "0 4px 12px rgba(0,0,0,0.15)", fontWeight: "600"
-          }}>
+          <div className="fixed bottom-6 right-6 z-50 bg-slate-900 text-white px-5 py-3 rounded-xl shadow-2xl text-sm font-semibold border border-slate-700 animate-bounce">
             {message}
           </div>
         )}
 
-        <div style={{ display: "flex", flexDirection: "column", alignItems: "center", marginBottom: "40px" }}>
-          <h2 style={{ fontSize: "32px", fontWeight: "800", color: "#0f172a", marginBottom: "20px" }}>
+        <div className="text-center mb-10">
+          <h2 className="text-2xl sm:text-3xl font-extrabold text-slate-900 dark:text-white mb-2 tracking-tight">
             Top Selling Products
           </h2>
+          <p className="text-sm sm:text-base text-slate-500 dark:text-slate-400 max-w-xl mx-auto mb-6">
+            Customer favorite fish, planted aquarium picks, and daily essentials
+          </p>
 
-          <div style={{ display: "flex", justifyContent: "center", gap: "10px", flexWrap: "wrap" }}>
+          <div className="flex justify-center gap-2 flex-wrap">
             <button
+              type="button"
               onClick={() => setSelectedCategory("All")}
-              style={{
-                backgroundColor: selectedCategory === "All" ? "#ff6b00" : "#ffffff",
-                color: selectedCategory === "All" ? "#ffffff" : "#475569",
-                border: "1px solid #cbd5e1",
-                padding: "8px 20px",
-                borderRadius: "20px",
-                fontWeight: "600",
-                fontSize: "14px",
-                cursor: "pointer",
-              }}
+              className={`px-4 py-1.5 rounded-full text-xs sm:text-sm font-semibold transition-all cursor-pointer ${
+                selectedCategory === "All"
+                  ? "bg-[#ff4d2d] text-white shadow-md shadow-orange-500/30"
+                  : "bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 hover:border-orange-400 border border-slate-200 dark:border-slate-700"
+              }`}
             >
               All
             </button>
             {categories.map((cat) => {
-              const isActive = selectedCategory === cat.name || selectedCategory === (cat._id || cat.id);
+              const isActive =
+                selectedCategory === cat.name ||
+                selectedCategory === (cat._id || cat.id);
               return (
                 <button
+                  type="button"
                   key={cat._id || cat.id}
                   onClick={() => setSelectedCategory(cat.name)}
-                  style={{
-                    backgroundColor: isActive ? "#ff6b00" : "#ffffff",
-                    color: isActive ? "#ffffff" : "#475569",
-                    border: "1px solid #cbd5e1",
-                    padding: "8px 20px",
-                    borderRadius: "20px",
-                    fontWeight: "600",
-                    fontSize: "14px",
-                    cursor: "pointer",
-                  }}
+                  className={`px-4 py-1.5 rounded-full text-xs sm:text-sm font-semibold transition-all cursor-pointer ${
+                    isActive
+                      ? "bg-[#ff4d2d] text-white shadow-md shadow-orange-500/30"
+                      : "bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 hover:border-orange-400 border border-slate-200 dark:border-slate-700"
+                  }`}
                 >
                   {cat.name}
                 </button>
@@ -129,96 +122,111 @@ function TopSelling() {
         </div>
 
         {loading ? (
-          <div style={{ fontSize: "16px", color: "#64748b", padding: "40px 0" }}>Loading Products...</div>
+          <div className="flex flex-col items-center justify-center py-16 text-slate-500 dark:text-slate-400">
+            <div className="w-8 h-8 border-3 border-orange-200 border-t-orange-500 rounded-full animate-spin mb-3" />
+            <p className="text-sm">Loading Top Products...</p>
+          </div>
         ) : filteredProducts.length === 0 ? (
-          <div style={{ fontSize: "16px", color: "#64748b", padding: "40px 0" }}>No products found in this category.</div>
+          <div className="text-center py-12 text-slate-500 dark:text-slate-400">
+            <p>No products found in this category.</p>
+          </div>
         ) : (
-          <div style={{ 
-            display: "grid", 
-            gridTemplateColumns: "repeat(auto-fill, minmax(250px, 1fr))", 
-            gap: "25px", 
-            justifyContent: "center",
-            marginBottom: "40px" 
-          }}>
+          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
             {filteredProducts.slice(0, 8).map((product) => {
               const itemId = product._id || product.id;
               const isWishlisted = wishlist.some((w) => (w._id || w.id) === itemId);
+              const isOutOfStock = product.qnt <= 0;
+              const hasDiscount =
+                product.discountPrice != null && product.discountPrice < product.price;
 
               return (
                 <div 
                   key={itemId} 
-                  style={{
-                    background: "#ffffff",
-                    border: "1px solid #e2e8f0",
-                    borderRadius: "12px",
-                    overflow: "hidden",
-                    textAlign: "left",
-                    display: "flex",
-                    flexDirection: "column",
-                    boxShadow: "0 2px 8px rgba(0, 0, 0, 0.04)",
-                    position: "relative"
-                  }}
+                  className="group relative bg-white dark:bg-slate-800 rounded-2xl border border-slate-200 dark:border-slate-700 p-4 flex flex-col justify-between shadow-sm hover:shadow-xl hover:-translate-y-1 transition-all duration-300"
                 >
-                  <button 
+                  <button
+                    type="button"
                     onClick={() => toggleWishlist(product)}
-                    style={{
-                      position: "absolute", top: "12px", right: "12px", background: "#ffffff",
-                      border: "none", width: "32px", height: "32px", borderRadius: "50%",
-                      cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center",
-                      boxShadow: "0 2px 6px rgba(0,0,0,0.1)", color: isWishlisted ? "#ef4444" : "#cbd5e1",
-                      zIndex: 2, transition: "color 0.2s"
-                    }}
+                    className={`absolute top-6 right-6 z-10 w-8 h-8 rounded-full flex items-center justify-center shadow-md transition-all cursor-pointer ${
+                      isWishlisted
+                        ? "bg-red-50 text-red-500 dark:bg-red-950/60 dark:text-red-400 scale-110"
+                        : "bg-white/90 dark:bg-slate-700 text-slate-400 hover:text-red-500 hover:scale-110"
+                    }`}
                     title={isWishlisted ? "Remove from Wishlist" : "Add to Wishlist"}
+                    aria-label="Wishlist toggle"
                   >
-                    <FaHeart size={14} />
+                    <FaHeart size={13} />
                   </button>
 
-                  <div style={{ width: "100%", height: "220px", backgroundColor: "#f1f5f9", overflow: "hidden" }}>
-                    <img
-                      src={getImageUrl(product.image)}
-                      alt={product.name}
-                      style={{ width: "100%", height: "100%", objectFit: "cover" }}
-                    />
+                  <div className="relative aspect-square rounded-xl overflow-hidden bg-slate-50 dark:bg-slate-900/50 mb-3 flex items-center justify-center">
+                    <Link to={`/shop/${itemId}`} className="w-full h-full">
+                      <img
+                        src={getImageUrl(product.image)}
+                        alt={product.name}
+                        loading="lazy"
+                        className={`w-full h-full object-cover group-hover:scale-105 transition-transform duration-300 ${
+                          isOutOfStock ? "grayscale opacity-50" : ""
+                        }`}
+                      />
+                    </Link>
+                    {isOutOfStock && (
+                      <span className="absolute top-2 left-2 bg-red-600 text-white text-[10px] font-extrabold uppercase px-2 py-0.5 rounded shadow">
+                        OUT OF STOCK
+                      </span>
+                    )}
                   </div>
 
-                  <div style={{ padding: "18px", display: "flex", flexDirection: "column", flexGrow: 1, gap: "10px" }}>
+                  <div className="flex flex-col flex-grow justify-between">
                     <div>
-                      <h3 style={{ fontSize: "16px", fontWeight: "700", color: "#1e293b", marginBottom: "4px" }}>{product.name}</h3>
-                      {product.discountPrice != null && product.discountPrice < product.price ? (
-                        <div>
-                          <span style={{ fontSize: "18px", fontWeight: "800", color: "#ff6b00" }}>₹{product.discountPrice}</span>{" "}
-                          <span style={{ textDecoration: "line-through", color: "#94a3b8", fontSize: "14px", marginLeft: "6px" }}>₹{product.price}</span>
-                        </div>
-                      ) : (
-                        <span style={{ fontSize: "18px", fontWeight: "800", color: "#ff6b00" }}>₹{product.price}</span>
-                      )}
+                      <Link to={`/shop/${itemId}`}>
+                        <h3 className="text-sm font-bold text-slate-900 dark:text-white group-hover:text-sky-500 line-clamp-1 transition-colors text-left mb-1.5">
+                          {product.name}
+                        </h3>
+                      </Link>
+
+                      <div className="flex items-center gap-2 mb-3 text-left">
+                        {hasDiscount ? (
+                          <>
+                            <span className="text-base font-extrabold text-[#ff4d2d]">
+                              ₹{product.discountPrice}
+                            </span>
+                            <span className="text-xs line-through text-slate-400">
+                              ₹{product.price}
+                            </span>
+                          </>
+                        ) : (
+                          <span className="text-base font-extrabold text-[#ff4d2d]">
+                            ₹{product.price}
+                          </span>
+                        )}
+                      </div>
                     </div>
 
-                    <div style={{ display: "flex", gap: "8px", marginTop: "auto" }}>
+                    <div className="flex items-center gap-2 pt-2 border-t border-slate-100 dark:border-slate-700/60">
                       <Link 
                         to={`/shop/${itemId}`} 
-                        style={{
-                          flex: 1, background: "#0284c7", color: "#fff", textAlign: "center",
-                          padding: "8px", borderRadius: "6px", textDecoration: "none", fontSize: "13px", fontWeight: "600"
-                        }}
+                        className="flex-1 text-center py-2 px-3 rounded-lg bg-slate-100 dark:bg-slate-700 hover:bg-sky-50 dark:hover:bg-slate-600 text-slate-700 dark:text-slate-200 hover:text-sky-600 text-xs font-bold transition-colors"
                       >
                         View Details
                       </Link>
-                      <button 
+                      <button
+                        type="button"
                         onClick={() => {
                           addToCart(product);
                           showNotification("🛒 Added to Cart Successfully!");
                         }}
-                        style={{
-                          background: "#f1f5f9", border: "none", padding: "8px 12px", borderRadius: "6px",
-                          cursor: "pointer", color: "#0b1c3f", display: "flex", alignItems: "center", justifyContent: "center"
-                        }}
-                        title="Add to Cart"
+                        disabled={isOutOfStock}
+                        className={`w-9 h-9 rounded-lg flex items-center justify-center transition-all cursor-pointer ${
+                          isOutOfStock
+                            ? "bg-slate-200 dark:bg-slate-700 text-slate-400 cursor-not-allowed"
+                            : "bg-[#0077b6] hover:bg-sky-600 text-white shadow-sm hover:shadow"
+                        }`}
+                        title={isOutOfStock ? "Out of Stock" : "Add to Cart"}
+                        aria-label="Add to Cart"
                       >
-                        <FaShoppingCart size={14} />
+                        <FaShoppingCart size={13} />
                       </button>
                     </div>
-
                   </div>
                 </div>
               );
@@ -226,26 +234,18 @@ function TopSelling() {
           </div>
         )}
 
-        <div style={{ marginTop: "30px", textAlign: "center" }}>
+        <div className="mt-12 text-center">
           <Link 
             to="/shop" 
-            style={{
-              backgroundColor: "#0f172a",
-              color: "#ffffff",
-              padding: "12px 35px",
-              borderRadius: "8px",
-              fontWeight: "700",
-              textDecoration: "none",
-              display: "inline-block"
-            }}
+            className="inline-flex items-center gap-2 px-8 py-3 rounded-xl bg-slate-900 dark:bg-slate-800 hover:bg-[#ff4d2d] dark:hover:bg-[#ff4d2d] text-white font-bold text-sm transition-all duration-200 shadow-md hover:shadow-lg hover:-translate-y-0.5"
           >
-            See More →
+            See More Products &rarr;
           </Link>
         </div>
-
       </div>
     </section>
   );
 }
 
 export default TopSelling;
+

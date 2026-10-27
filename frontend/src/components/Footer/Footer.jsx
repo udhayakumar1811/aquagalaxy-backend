@@ -1,4 +1,3 @@
-import "./Footer.css";
 import { Link } from "react-router-dom";
 import {
   FaFacebookF,
@@ -14,85 +13,92 @@ import udhayaLogo from "../../assets/udhaya-logo.png";
 
 function Footer() {
   return (
-    <footer className="footer">
-      <div className="footer-container">
+    <footer className="bg-[#0a2540] dark:bg-[#031020] text-slate-200 pt-12 border-t border-[#133355] dark:border-[#12375c] w-full">
+      <div className="max-w-6xl mx-auto px-6 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8 pb-10">
 
         {/* Brand Summary Column */}
-        <div className="footer-box">
-          <div style={{ display: "flex", alignItems: "center", gap: "12px", marginBottom: "14px" }}>
+        <div>
+          <div className="flex items-center gap-3 mb-3.5">
             <img
               src={udhayaLogo}
               alt="UDHAYA AQUATICS"
-              style={{ height: "48px", width: "auto", objectFit: "contain", borderRadius: "8px", background: "white", padding: "2px" }}
+              className="h-12 w-auto object-contain rounded-lg bg-white p-0.5"
             />
-            <h2 style={{ margin: 0, fontSize: "1.4rem", color: "#f8fafc" }}>UDHAYA AQUATICS</h2>
+            <h2 className="m-0 text-xl font-bold text-slate-50">UDHAYA AQUATICS</h2>
           </div>
-          <p className="brand-desc">
+          <p className="text-slate-300 text-xs sm:text-sm leading-relaxed mb-3">
             Premium Live Ornamental Fish, Custom Glass Tanks, Live Plants,
             Quality Feeds and Aquarium Accessories.
           </p>
-          <div style={{ marginTop: "12px", fontSize: "13px", color: "#94a3b8" }}>
-            Proprietor: <strong>UDHAYAKUMAR</strong>
+          <div className="text-xs text-slate-400">
+            Proprietor: <strong className="text-slate-200 font-semibold">UDHAYAKUMAR</strong>
           </div>
         </div>
 
         {/* Quick Links Column */}
-        <div className="footer-box">
-          <h3>Quick Links</h3>
-          <ul>
-            <li><Link to="/">Home</Link></li>
-            <li><Link to="/shop">Shop</Link></li>
-            <li><Link to="/about">About Us</Link></li>
-            <li><Link to="/contact">Contact Us</Link></li>
-            <li><Link to="/wishlist">Wishlist</Link></li>
-            <li><Link to="/profile">My Account / Orders</Link></li>
+        <div>
+          <h3 className="text-sm font-bold uppercase tracking-wider text-white mb-3.5">Quick Links</h3>
+          <ul className="space-y-2 text-xs sm:text-sm text-slate-300">
+            <li><Link to="/" className="hover:text-sky-400 transition-colors">Home</Link></li>
+            <li><Link to="/shop" className="hover:text-sky-400 transition-colors">Shop</Link></li>
+            <li><Link to="/about" className="hover:text-sky-400 transition-colors">About Us</Link></li>
+            <li><Link to="/contact" className="hover:text-sky-400 transition-colors">Contact Us</Link></li>
+            <li><Link to="/wishlist" className="hover:text-sky-400 transition-colors">Wishlist</Link></li>
+            <li><Link to="/profile" className="hover:text-sky-400 transition-colors">My Account / Orders</Link></li>
           </ul>
         </div>
 
         {/* Customer Policies & Legal Column */}
-        <div className="footer-box">
-          <h3>Customer Policies</h3>
-          <ul>
-            <li><Link to="/privacy-policy">Privacy Policy</Link></li>
-            <li><Link to="/terms-and-conditions">Terms & Conditions</Link></li>
-            <li><Link to="/shipping-policy">Shipping & Delivery</Link></li>
-            <li><Link to="/refund-policy">Return & Refund Policy</Link></li>
-            <li><Link to="/cancellation-policy">Cancellation Policy</Link></li>
-            <li><Link to="/payment-policy">Payment Policy</Link></li>
+        <div>
+          <h3 className="text-sm font-bold uppercase tracking-wider text-white mb-3.5">Customer Policies</h3>
+          <ul className="space-y-2 text-xs sm:text-sm text-slate-300">
+            <li><Link to="/privacy-policy" className="hover:text-sky-400 transition-colors">Privacy Policy</Link></li>
+            <li><Link to="/terms-and-conditions" className="hover:text-sky-400 transition-colors">Terms & Conditions</Link></li>
+            <li><Link to="/shipping-policy" className="hover:text-sky-400 transition-colors">Shipping & Delivery</Link></li>
+            <li><Link to="/refund-policy" className="hover:text-sky-400 transition-colors">Return & Refund Policy</Link></li>
+            <li><Link to="/cancellation-policy" className="hover:text-sky-400 transition-colors">Cancellation Policy</Link></li>
+            <li><Link to="/payment-policy" className="hover:text-sky-400 transition-colors">Payment Policy</Link></li>
           </ul>
         </div>
 
         {/* Contact Information Column */}
-        <div className="footer-box">
-          <h3>Contact Us</h3>
+        <div>
+          <h3 className="text-sm font-bold uppercase tracking-wider text-white mb-3.5">Contact Us</h3>
           
-          <div className="contact-item">
-            <FaPhone className="contact-icon" /> <span><a href="tel:+916381582969" style={{ color: "inherit", textDecoration: "none" }}>+91 63815 82969</a></span>
-          </div>
-          <div className="contact-item">
-            <FaWhatsapp className="contact-icon" /> <span><a href="https://wa.me/916381582969" target="_blank" rel="noreferrer" style={{ color: "inherit", textDecoration: "none" }}>+91 63815 82969</a></span>
-          </div>
-          <div className="contact-item">
-            <FaEnvelope className="contact-icon" /> <span><a href="mailto:udhaya.aqua.pets@gmail.com" style={{ color: "inherit", textDecoration: "none" }}>udhaya.aqua.pets@gmail.com</a></span>
-          </div>
-          <div className="contact-item">
-            <FaMapMarkerAlt className="contact-icon" /> <span>Rajapalayam, Virudhunagar Dist, Tamil Nadu - 626117</span>
-          </div>
-          <div className="contact-item">
-            <FaClock className="contact-icon" /> <span>Mon – Sun: 7:00 AM – 9:00 PM</span>
+          <div className="space-y-2.5 text-xs sm:text-sm text-slate-300">
+            <div className="flex items-center gap-2.5">
+              <FaPhone className="text-sky-400 flex-shrink-0 text-xs" />
+              <a href="tel:+916381582969" className="hover:text-sky-400 transition-colors">+91 63815 82969</a>
+            </div>
+            <div className="flex items-center gap-2.5">
+              <FaWhatsapp className="text-emerald-400 flex-shrink-0 text-xs" />
+              <a href="https://wa.me/916381582969" target="_blank" rel="noreferrer" className="hover:text-emerald-400 transition-colors">+91 63815 82969</a>
+            </div>
+            <div className="flex items-center gap-2.5">
+              <FaEnvelope className="text-sky-400 flex-shrink-0 text-xs" />
+              <a href="mailto:udhaya.aqua.pets@gmail.com" className="hover:text-sky-400 transition-colors break-all">udhaya.aqua.pets@gmail.com</a>
+            </div>
+            <div className="flex items-start gap-2.5">
+              <FaMapMarkerAlt className="text-sky-400 flex-shrink-0 text-xs mt-0.5" />
+              <span>Rajapalayam, Virudhunagar Dist, Tamil Nadu - 626117</span>
+            </div>
+            <div className="flex items-center gap-2.5">
+              <FaClock className="text-sky-400 flex-shrink-0 text-xs" />
+              <span>Mon – Sun: 7:00 AM – 9:00 PM</span>
+            </div>
           </div>
 
-          <div className="social-icons" style={{ marginTop: "15px" }}>
-            <a href="https://www.facebook.com/share/1DYndWGcjC/" target="_blank" rel="noreferrer" title="Facebook"><FaFacebookF /></a>
-            <a href="https://www.instagram.com/invites/contact/?utm_source=ig_contact_invite&utm_medium=copy_link&utm_content=j0ccj2u" target="_blank" rel="noreferrer" title="Instagram"><FaInstagram /></a>
-            <a href="https://www.youtube.com/@Udhaya_Aquatics" target="_blank" rel="noreferrer" title="YouTube"><FaYoutube /></a>
-            <a href="https://chat.whatsapp.com/Bb4FI0WOsYgBKxHoTOQ8u4" target="_blank" rel="noreferrer" title="WhatsApp Community"><FaWhatsapp /></a>
+          <div className="flex items-center gap-3 mt-4 text-base text-slate-400">
+            <a href="https://www.facebook.com/share/1DYndWGcjC/" target="_blank" rel="noreferrer" title="Facebook" className="hover:text-sky-400 hover:-translate-y-0.5 transition-all"><FaFacebookF /></a>
+            <a href="https://www.instagram.com/invites/contact/?utm_source=ig_contact_invite&utm_medium=copy_link&utm_content=j0ccj2u" target="_blank" rel="noreferrer" title="Instagram" className="hover:text-pink-400 hover:-translate-y-0.5 transition-all"><FaInstagram /></a>
+            <a href="https://www.youtube.com/@Udhaya_Aquatics" target="_blank" rel="noreferrer" title="YouTube" className="hover:text-red-500 hover:-translate-y-0.5 transition-all"><FaYoutube /></a>
+            <a href="https://chat.whatsapp.com/Bb4FI0WOsYgBKxHoTOQ8u4" target="_blank" rel="noreferrer" title="WhatsApp Community" className="hover:text-emerald-400 hover:-translate-y-0.5 transition-all"><FaWhatsapp /></a>
           </div>
         </div>
 
       </div>
 
-      <div className="copyright">
+      <div className="text-center py-4 px-6 border-t border-slate-800 text-slate-400 text-xs">
         &copy; {new Date().getFullYear()} UDHAYA AQUATICS. All Rights Reserved. Owned and Operated by UDHAYAKUMAR.
       </div>
     </footer>

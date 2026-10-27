@@ -1,6 +1,7 @@
 import { useState, useEffect, useContext } from "react";
 import { API_URL, getImageUrl } from "../../config";
 import { safeParseResponse } from "../../utils/apiHandler";
+import { getValidToken, getAuthUser, clearAuthSession } from "../../utils/auth";
 import { ThemeContext } from "../../context/ThemeContext";
 import { 
   FaTachometerAlt, 
@@ -9,6 +10,7 @@ import {
   FaShoppingCart, 
   FaSignOutAlt,
   FaTrash,
+  FaEdit,
   FaBars,
   FaTimes,
   FaImage,
@@ -43,7 +45,6 @@ import AdminUsers from "./components/AdminUsers";
 import AdminAnalytics from "./components/AdminAnalytics";
 import AdminAuditLogs from "./components/AdminAuditLogs";
 import ProductMediaManager from "./components/ProductMediaManager";
-import "./Dashboard.css";
 
 const TAB_TITLES = {
   overview: "Dashboard Overview",
@@ -88,15 +89,36 @@ function Dashboard() {
   const [catImageFile, setCatImageFile] = useState(null);
   const [catUploading, setCatUploading] = useState(false);
 
+  // Edit Category Modal State
+  const [editingCategory, setEditingCategory] = useState(null);
+  const [editCatName, setEditCatName] = useState("");
+  const [editCatImageFile, setEditCatImageFile] = useState(null);
+  const [editCatExistingImage, setEditCatExistingImage] = useState("");
+  const [editCatUpdating, setEditCatUpdating] = useState(false);
+
   // Product Form State
   const [prodName, setProdName] = useState("");
   const [prodCategory, setProdCategory] = useState("");
   const [prodPrice, setProdPrice] = useState("");
+  const [prodDiscountPrice, setProdDiscountPrice] = useState("");
   const [prodQnt, setProdQnt] = useState("");
   const [prodImageFile, setProdImageFile] = useState(null);
   const [prodDesc, setProdDesc] = useState("");
   const [prodUploading, setProdUploading] = useState(false);
   const [mediaManagerProduct, setMediaManagerProduct] = useState(null);
+
+  // Edit Product Modal State
+  const [editingProduct, setEditingProduct] = useState(null);
+  const [editProdName, setEditProdName] = useState("");
+  const [editProdCategory, setEditProdCategory] = useState("");
+  const [editProdPrice, setEditProdPrice] = useState("");
+  const [editProdDiscountPrice, setEditProdDiscountPrice] = useState("");
+  const [editProdQnt, setEditProdQnt] = useState("");
+  const [editProdDesc, setEditProdDesc] = useState("");
+  const [editProdIsActive, setEditProdIsActive] = useState(true);
+  const [editProdImageFile, setEditProdImageFile] = useState(null);
+  const [editProdExistingImage, setEditProdExistingImage] = useState("");
+  const [editProdUpdating, setEditProdUpdating] = useState(false);
   // Client-side RENDER pagination for the admin products table (Priority 6).
   // NOTE: this caps how many rows React renders at once, which is the
   // actual DOM-performance bottleneck for a large table — it does NOT
@@ -144,10 +166,8 @@ function Dashboard() {
   const [bannerEndDate, setBannerEndDate] = useState("");
   const [bannerUpdating, setBannerUpdating] = useState(false);
 
-  const token = localStorage.getItem("token");
-  const currentUser = (() => {
-    try { return JSON.parse(localStorage.getItem("user")); } catch { return null; }
-  })();
+  const token = getValidToken();
+  const currentUser = getAuthUser();
   const isFullAdmin = currentUser && (currentUser.role === "admin" || currentUser.role === "superadmin");
 
   // Mirrors backend/middleware/rbac.js's ROLE_PERMISSIONS exactly. The
@@ -186,7 +206,8 @@ function Dashboard() {
   const fetchAllProducts = async () => {
     const canViewInactive = can("products.manage");
     const inactiveParam = canViewInactive ? "&includeInactive=true" : "";
-    const headers = canViewInactive ? { Authorization: `Bearer ${token}` } : {};
+    const currentToken = getValidToken();
+    const headers = (canViewInactive && currentToken) ? { Authorization: `Bearer ${currentToken}` } : {};
     let page = 1;
     let all = [];
     for (let i = 0; i < 50; i++) { // safety ceiling: 50 x 100/page = 5,000 products
@@ -218,10 +239,12 @@ function Dashboard() {
   // tab is only reachable via can("products.manage") already).
   const loadProductPage = async (pageNum) => {
     if (!can("products.manage")) return;
+    const currentToken = getValidToken();
+    if (!currentToken) return;
     try {
       const res = await fetch(
         `${API_URL}/api/products?page=${pageNum}&limit=${ADMIN_PAGE_SIZE}&includeInactive=true`,
-        { headers: { Authorization: `Bearer ${token}` } }
+        { headers: { Authorization: `Bearer ${currentToken}` } }
       );
       const data = await safeParseResponse(res, `Products Table (page ${pageNum})`);
       setProductPageData(Array.isArray(data.products) ? data.products : []);
@@ -240,11 +263,13 @@ function Dashboard() {
   // permission-gated requests; it never asks the database for "everything"
   // in one unbounded call.
   const fetchAllOrders = async () => {
+    const currentToken = getValidToken();
+    if (!currentToken) return [];
     let page = 1;
     let all = [];
     for (let i = 0; i < 100; i++) { // safety ceiling: 100 x 200/page = 20,000 orders
       try {
-        const res = await fetch(`${API_URL}/api/orders?page=${page}&limit=200`, { headers: { Authorization: `Bearer ${token}` } });
+        const res = await fetch(`${API_URL}/api/orders?page=${page}&limit=200`, { headers: { Authorization: `Bearer ${currentToken}` } });
         if (!res.ok) {
           const errData = await safeParseResponse(res, `Orders (page ${page})`).catch((e) => e);
           console.error(`Orders page ${page} error:`, errData?.message || errData);
@@ -265,6 +290,11 @@ function Dashboard() {
   };
 
   const fetchData = async () => {
+    const currentToken = getValidToken();
+    if (!currentToken) {
+      clearAuthSession(true, "Your session has expired. Please log in again.");
+      return;
+    }
     try {
       const [
         resCatSettled,
@@ -278,7 +308,7 @@ function Dashboard() {
         fetch(`${API_URL}/api/banner`).then((r) => safeParseResponse(r, "Banner")),
         fetch(`${API_URL}/api/gallery`).then((r) => safeParseResponse(r, "Gallery")),
         fetch(`${API_URL}/api/admin/contacts`, {
-          headers: { Authorization: `Bearer ${token}` }
+          headers: { Authorization: `Bearer ${currentToken}` }
         }).then((r) => safeParseResponse(r, "Contacts")),
         fetchAllProducts(),
         fetchAllOrders(),
@@ -396,8 +426,10 @@ function Dashboard() {
   };
 
   const refetchContacts = async () => {
+    const currentToken = getValidToken();
+    if (!currentToken) return;
     try {
-      const res = await fetch(`${API_URL}/api/admin/contacts`, { headers: { Authorization: `Bearer ${token}` } });
+      const res = await fetch(`${API_URL}/api/admin/contacts`, { headers: { Authorization: `Bearer ${currentToken}` } });
       const data = await safeParseResponse(res, "Contacts");
       setContactMessages(Array.isArray(data) ? data : []);
     } catch (err) {
@@ -490,6 +522,42 @@ function Dashboard() {
     }
   };
 
+  const startEditCategory = (c) => {
+    setEditingCategory(c);
+    setEditCatName(c.name || "");
+    setEditCatExistingImage(c.image || "");
+    setEditCatImageFile(null);
+  };
+
+  const handleUpdateCategory = async (e) => {
+    e.preventDefault();
+    if (!editingCategory) return;
+    try {
+      setEditCatUpdating(true);
+      let imagePath = editCatExistingImage;
+      if (editCatImageFile) {
+        imagePath = await uploadFileHandler(editCatImageFile);
+      }
+      const catId = editingCategory._id || editingCategory.id;
+      const res = await fetch(`${API_URL}/api/category/${catId}`, {
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({ name: editCatName, image: imagePath, isCategory: true }),
+      });
+      await safeParseResponse(res, "Update Category");
+      setMessage("✅ Category Updated Successfully!");
+      setEditingCategory(null);
+      refetchCategories();
+    } catch (err) {
+      setMessage("❌ Error updating category: " + err.message);
+    } finally {
+      setEditCatUpdating(false);
+    }
+  };
+
   const handleDeleteCategory = async (id) => {
     if (!window.confirm("Are you sure you want to delete this category?")) return;
 
@@ -524,20 +592,25 @@ function Dashboard() {
       setProdUploading(true);
       const imagePath = await uploadFileHandler(prodImageFile);
 
+      const payload = {
+        category_id: prodCategory,
+        name: prodName,
+        price: Number(prodPrice),
+        qnt: Number(prodQnt),
+        image: imagePath,
+        desc: prodDesc,
+      };
+      if (prodDiscountPrice !== "") {
+        payload.discountPrice = Number(prodDiscountPrice);
+      }
+
       const res = await fetch(`${API_URL}/api/products`, {
         method: "POST",
         headers: { 
           "Content-Type": "application/json",
           Authorization: `Bearer ${token}`,
         },
-        body: JSON.stringify({
-          category_id: prodCategory,
-          name: prodName,
-          price: Number(prodPrice),
-          qnt: Number(prodQnt),
-          image: imagePath,
-          desc: prodDesc,
-        }),
+        body: JSON.stringify(payload),
       });
 
       await safeParseResponse(res, "Add Product");
@@ -545,6 +618,7 @@ function Dashboard() {
       setProdName("");
       setProdCategory("");
       setProdPrice("");
+      setProdDiscountPrice("");
       setProdQnt("");
       setProdImageFile(null);
       setProdDesc("");
@@ -553,6 +627,59 @@ function Dashboard() {
       setMessage("❌ Error adding product: " + err.message);
     } finally {
       setProdUploading(false);
+    }
+  };
+
+  const startEditProduct = (p) => {
+    setEditingProduct(p);
+    setEditProdName(p.name || "");
+    const catId = p.category_id && typeof p.category_id === "object" ? (p.category_id._id || p.category_id.id) : p.category_id;
+    setEditProdCategory(catId || "");
+    setEditProdPrice(p.price !== undefined && p.price !== null ? p.price : "");
+    setEditProdDiscountPrice(p.discountPrice !== undefined && p.discountPrice !== null ? p.discountPrice : "");
+    setEditProdQnt(p.qnt !== undefined && p.qnt !== null ? p.qnt : "");
+    setEditProdDesc(p.desc || "");
+    setEditProdIsActive(p.isActive !== undefined ? p.isActive : true);
+    setEditProdImageFile(null);
+    setEditProdExistingImage(p.image || "");
+  };
+
+  const handleUpdateProduct = async (e) => {
+    e.preventDefault();
+    if (!editingProduct) return;
+    try {
+      setEditProdUpdating(true);
+      let imagePath = editProdExistingImage;
+      if (editProdImageFile) {
+        imagePath = await uploadFileHandler(editProdImageFile);
+      }
+      const prodId = editingProduct._id || editingProduct.id;
+      const payload = {
+        name: editProdName,
+        category_id: editProdCategory,
+        price: Number(editProdPrice),
+        discountPrice: editProdDiscountPrice !== "" ? Number(editProdDiscountPrice) : null,
+        qnt: Number(editProdQnt),
+        desc: editProdDesc,
+        isActive: Boolean(editProdIsActive),
+        image: imagePath,
+      };
+      const res = await fetch(`${API_URL}/api/products/${prodId}`, {
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify(payload),
+      });
+      await safeParseResponse(res, "Update Product");
+      setMessage("✅ Product Updated Successfully!");
+      setEditingProduct(null);
+      refetchProducts();
+    } catch (err) {
+      setMessage("❌ Error updating product: " + err.message);
+    } finally {
+      setEditProdUpdating(false);
     }
   };
 
@@ -932,9 +1059,7 @@ function Dashboard() {
   };
 
   const handleLogout = () => {
-    localStorage.removeItem("token");
-    localStorage.removeItem("user");
-    navigate("/login");
+    clearAuthSession(true);
   };
 
   // Revenue only counts orders whose payment has actually been verified —
@@ -1209,7 +1334,7 @@ function Dashboard() {
               onClick={() => navigate("/")}
               className="btn-secondary"
               style={{
-                background: "#0b1c3f",
+                background: "#0a2540",
                 color: "white",
                 border: "none",
                 padding: "9px 14px",
@@ -1395,7 +1520,10 @@ function Dashboard() {
                         <td><img src={getImageUrl(c.image)} alt={c.name} width="45" height="45" style={{ objectFit: "cover", borderRadius: "6px" }} /></td>
                         <td><strong>{c.name}</strong></td>
                         <td>{c.count || 0} Items</td>
-                        <td><button className="action-btn delete" onClick={() => handleDeleteCategory(c._id || c.id)}><FaTrash /></button></td>
+                        <td style={{ display: "flex", gap: "6px" }}>
+                          <button className="action-btn edit" onClick={() => startEditCategory(c)} title="Edit Category"><FaEdit /></button>
+                          <button className="action-btn delete" onClick={() => handleDeleteCategory(c._id || c.id)} title="Delete Category"><FaTrash /></button>
+                        </td>
                       </tr>
                     ))}
                   </tbody>
@@ -1413,19 +1541,22 @@ function Dashboard() {
               <form onSubmit={handleAddProduct}>
                 <div className="form-grid-2">
                   <div className="admin-input-group">
-                    <label>Category</label>
+                    <label>Category *</label>
                     <select required value={prodCategory} onChange={(e) => setProdCategory(e.target.value)}>
                       <option value="">-- Select Category --</option>
                       {categories.map((c) => <option key={c._id || c.id} value={c._id || c.id}>{c.name}</option>)}
                     </select>
                   </div>
-                  <div className="admin-input-group"><label>Product Name</label><input type="text" required value={prodName} onChange={(e) => setProdName(e.target.value)} /></div>
+                  <div className="admin-input-group"><label>Product Name *</label><input type="text" required value={prodName} onChange={(e) => setProdName(e.target.value)} /></div>
                 </div>
                 <div className="form-grid-2">
-                  <div className="admin-input-group"><label>Price (₹)</label><input type="number" required value={prodPrice} onChange={(e) => setProdPrice(e.target.value)} /></div>
-                  <div className="admin-input-group"><label>Stock</label><input type="number" required value={prodQnt} onChange={(e) => setProdQnt(e.target.value)} /></div>
+                  <div className="admin-input-group"><label>Regular Price (₹) *</label><input type="number" required min="0" value={prodPrice} onChange={(e) => setProdPrice(e.target.value)} /></div>
+                  <div className="admin-input-group"><label>Discount / Sale Price (₹) (Optional)</label><input type="number" min="0" placeholder="e.g. 299" value={prodDiscountPrice} onChange={(e) => setProdDiscountPrice(e.target.value)} /></div>
                 </div>
-                <div className="admin-input-group"><label>Upload Image</label><input type="file" accept="image/*" required onChange={(e) => setProdImageFile(e.target.files[0])} /></div>
+                <div className="form-grid-2">
+                  <div className="admin-input-group"><label>Stock Quantity *</label><input type="number" required min="0" value={prodQnt} onChange={(e) => setProdQnt(e.target.value)} /></div>
+                  <div className="admin-input-group"><label>Upload Image *</label><input type="file" accept="image/*" required onChange={(e) => setProdImageFile(e.target.files[0])} /></div>
+                </div>
                 <div className="admin-input-group"><label>Description</label><textarea rows="3" value={prodDesc} onChange={(e) => setProdDesc(e.target.value)}></textarea></div>
                 <button type="submit" className="submit-btn" disabled={prodUploading}>{prodUploading ? "Uploading..." : "Add Product"}</button>
               </form>
@@ -1441,17 +1572,29 @@ function Dashboard() {
                       <tr key={p._id || p.id}>
                         <td><img src={getImageUrl(p.image)} alt={p.name} width="45" height="45" style={{ objectFit: "cover", borderRadius: "6px" }} /></td>
                         <td><strong>{p.name}</strong></td>
-                        <td>₹{p.price}</td>
+                        <td>
+                          {p.discountPrice != null && p.discountPrice < p.price ? (
+                            <span>
+                              <strong style={{ color: "#ff4d2d" }}>₹{p.discountPrice}</strong>{" "}
+                              <span style={{ textDecoration: "line-through", color: "#94a3b8", fontSize: "12px" }}>₹{p.price}</span>
+                            </span>
+                          ) : (
+                            <span>₹{p.price}</span>
+                          )}
+                        </td>
                         <td>{p.qnt <= 5 ? <span className="low-stock-alert" style={{ color: "#ef4444", fontWeight: "bold" }}><FaExclamationTriangle /> {p.qnt} Left</span> : <span>{p.qnt}</span>}</td>
                         <td><strong>{renderCategoryName(p)}</strong></td>
                         <td style={{ fontSize: "12px", color: "#64748b" }}>
                           {(p.images?.length || 0)} extra img{p.video ? " · video" : ""}
                         </td>
                         <td style={{ display: "flex", gap: "6px" }}>
+                          <button className="action-btn edit" onClick={() => startEditProduct(p)} title="Edit Product">
+                            <FaEdit />
+                          </button>
                           <button className="action-btn" onClick={() => setMediaManagerProduct(p)} title="Manage Images & Video" style={{ background: "#e0f2fe", color: "#0284c7", border: "none", borderRadius: "4px", padding: "6px 8px", cursor: "pointer" }}>
                             <FaImage />
                           </button>
-                          <button className="action-btn delete" onClick={() => handleDeleteProduct(p._id || p.id)}><FaTrash /></button>
+                          <button className="action-btn delete" onClick={() => handleDeleteProduct(p._id || p.id)} title="Delete Product"><FaTrash /></button>
                         </td>
                       </tr>
                     ))}
@@ -1522,7 +1665,7 @@ function Dashboard() {
                       const utr = order.paymentDetails?.utr || order.upiTransactionId;
                       return (
                         <tr key={order._id}>
-                          <td style={{ fontWeight: "700", color: "#0f172a" }}>{formatOrderId(order)}</td>
+                          <td style={{ fontWeight: "700", color: "var(--text-primary)" }}>{formatOrderId(order)}</td>
                           <td><strong>{order.shippingAddress?.fullName || "Guest"}</strong></td>
                           <td>{new Date(order.createdAt).toLocaleDateString("en-GB")}</td>
                           <td style={{ fontWeight: "600", color: "#16a34a" }}>₹{totalPrice}</td>
@@ -1910,7 +2053,7 @@ function Dashboard() {
                   onClick={exportProductsToCSV}
                   className="btn-export"
                   style={{
-                    background: "#ff6b00",
+                    background: "#ff4d2d",
                     color: "white",
                     border: "none",
                     padding: "11px 18px",
@@ -1973,10 +2116,175 @@ function Dashboard() {
             setMessage={setMessage}
             onClose={() => setMediaManagerProduct(null)}
             onSaved={(updatedProduct) => {
-              setProducts((prev) => prev.map((p) => (p._id === updatedProduct._id ? updatedProduct : p)));
-              setProductPageData((prev) => prev.map((p) => (p._id === updatedProduct._id ? updatedProduct : p)));
+              setProducts((prev) => prev.map((p) => ((p._id || p.id) === (updatedProduct._id || updatedProduct.id) ? updatedProduct : p)));
+              setProductPageData((prev) => prev.map((p) => ((p._id || p.id) === (updatedProduct._id || updatedProduct.id) ? updatedProduct : p)));
             }}
           />
+        )}
+
+        {/* EDIT CATEGORY MODAL */}
+        {editingCategory && (
+          <div className="admin-modal-overlay" onClick={() => setEditingCategory(null)}>
+            <div className="admin-modal-card" onClick={(e) => e.stopPropagation()}>
+              <div className="admin-modal-header">
+                <h2>Edit Category</h2>
+                <button className="admin-modal-close-btn" onClick={() => setEditingCategory(null)}>
+                  <FaTimes />
+                </button>
+              </div>
+              <form onSubmit={handleUpdateCategory}>
+                <div className="admin-input-group">
+                  <label>Category Name</label>
+                  <input
+                    type="text"
+                    required
+                    value={editCatName}
+                    onChange={(e) => setEditCatName(e.target.value)}
+                  />
+                </div>
+                {editCatExistingImage && (
+                  <div style={{ marginBottom: "14px" }}>
+                    <label style={{ display: "block", fontSize: "12px", color: "var(--text-secondary)", marginBottom: "4px" }}>Current Category Image</label>
+                    <img src={getImageUrl(editCatExistingImage)} alt="Current" width="70" height="70" style={{ objectFit: "cover", borderRadius: "6px" }} />
+                  </div>
+                )}
+                <div className="admin-input-group">
+                  <label>Replace Image (Optional)</label>
+                  <input
+                    type="file"
+                    accept="image/*"
+                    onChange={(e) => setEditCatImageFile(e.target.files[0])}
+                  />
+                </div>
+                <div className="admin-modal-actions">
+                  <button type="button" className="cancel-btn" onClick={() => setEditingCategory(null)}>
+                    Cancel
+                  </button>
+                  <button type="submit" className="submit-btn" disabled={editCatUpdating}>
+                    {editCatUpdating ? "Saving..." : "Save Changes"}
+                  </button>
+                </div>
+              </form>
+            </div>
+          </div>
+        )}
+
+        {/* EDIT PRODUCT MODAL */}
+        {editingProduct && (
+          <div className="admin-modal-overlay" onClick={() => setEditingProduct(null)}>
+            <div className="admin-modal-card" style={{ maxWidth: "650px" }} onClick={(e) => e.stopPropagation()}>
+              <div className="admin-modal-header">
+                <h2>Edit Product</h2>
+                <button className="admin-modal-close-btn" onClick={() => setEditingProduct(null)}>
+                  <FaTimes />
+                </button>
+              </div>
+              <form onSubmit={handleUpdateProduct}>
+                <div className="form-grid-2">
+                  <div className="admin-input-group">
+                    <label>Category</label>
+                    <select required value={editProdCategory} onChange={(e) => setEditProdCategory(e.target.value)}>
+                      <option value="">-- Select Category --</option>
+                      {categories.map((c) => (
+                        <option key={c._id || c.id} value={c._id || c.id}>
+                          {c.name}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+                  <div className="admin-input-group">
+                    <label>Product Name</label>
+                    <input
+                      type="text"
+                      required
+                      value={editProdName}
+                      onChange={(e) => setEditProdName(e.target.value)}
+                    />
+                  </div>
+                </div>
+
+                <div className="form-grid-2">
+                  <div className="admin-input-group">
+                    <label>Regular Price (₹)</label>
+                    <input
+                      type="number"
+                      required
+                      min="0"
+                      value={editProdPrice}
+                      onChange={(e) => setEditProdPrice(e.target.value)}
+                    />
+                  </div>
+                  <div className="admin-input-group">
+                    <label>Discount / Sale Price (₹) (Optional)</label>
+                    <input
+                      type="number"
+                      min="0"
+                      placeholder="Leave blank if no discount"
+                      value={editProdDiscountPrice}
+                      onChange={(e) => setEditProdDiscountPrice(e.target.value)}
+                    />
+                  </div>
+                </div>
+
+                <div className="form-grid-2">
+                  <div className="admin-input-group">
+                    <label>Stock Quantity</label>
+                    <input
+                      type="number"
+                      required
+                      min="0"
+                      value={editProdQnt}
+                      onChange={(e) => setEditProdQnt(e.target.value)}
+                    />
+                  </div>
+                  <div className="admin-input-group">
+                    <label>Status</label>
+                    <select
+                      value={editProdIsActive ? "active" : "inactive"}
+                      onChange={(e) => setEditProdIsActive(e.target.value === "active")}
+                    >
+                      <option value="active">Active (Visible in Store)</option>
+                      <option value="inactive">Inactive (Hidden)</option>
+                    </select>
+                  </div>
+                </div>
+
+                {editProdExistingImage && (
+                  <div style={{ marginBottom: "14px" }}>
+                    <label style={{ display: "block", fontSize: "12px", color: "var(--text-secondary)", marginBottom: "4px" }}>Current Main Image</label>
+                    <img src={getImageUrl(editProdExistingImage)} alt="Current" width="70" height="70" style={{ objectFit: "cover", borderRadius: "6px" }} />
+                  </div>
+                )}
+
+                <div className="admin-input-group">
+                  <label>Replace Main Image (Optional)</label>
+                  <input
+                    type="file"
+                    accept="image/*"
+                    onChange={(e) => setEditProdImageFile(e.target.files[0])}
+                  />
+                </div>
+
+                <div className="admin-input-group">
+                  <label>Description</label>
+                  <textarea
+                    rows="3"
+                    value={editProdDesc}
+                    onChange={(e) => setEditProdDesc(e.target.value)}
+                  ></textarea>
+                </div>
+
+                <div className="admin-modal-actions">
+                  <button type="button" className="cancel-btn" onClick={() => setEditingProduct(null)}>
+                    Cancel
+                  </button>
+                  <button type="submit" className="submit-btn" disabled={editProdUpdating}>
+                    {editProdUpdating ? "Saving..." : "Save Changes"}
+                  </button>
+                </div>
+              </form>
+            </div>
+          </div>
         )}
 
       </main>

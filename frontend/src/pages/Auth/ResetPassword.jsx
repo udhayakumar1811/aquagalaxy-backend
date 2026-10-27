@@ -3,7 +3,6 @@ import { API_URL } from "../../config";
 import { Link, useParams, useNavigate } from "react-router-dom";
 import { FaEye, FaEyeSlash, FaLock } from "react-icons/fa";
 import udhayaLogo from "../../assets/udhaya-logo.png";
-import "./Auth.css";
 
 function ResetPassword() {
   const { token } = useParams();
@@ -130,3 +129,4 @@ function ResetPassword() {
 }
 
 export default ResetPassword;
+
