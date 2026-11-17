@@ -71,6 +71,18 @@ const updateAdminSettings = async (req, res) => {
     const settings = await Settings.getSettings();
     const oldWhatsappNumber = settings.whatsapp.adminNumber;
 
+    // Seamlessly map store or social alias if sent by clients
+    if (req.body.store && !req.body.website) {
+      req.body.website = req.body.store;
+    }
+    if (req.body.social) {
+      req.body.website = req.body.website || {};
+      req.body.website.socialLinks = {
+        ...(settings.website?.socialLinks?.toObject ? settings.website.socialLinks.toObject() : settings.website?.socialLinks || {}),
+        ...req.body.social,
+      };
+    }
+
     // Deep-merge each top-level section so a partial update from the admin
     // UI doesn't wipe out fields it didn't send.
     const sections = ["website", "whatsapp", "payment", "tax", "notifications"];
@@ -96,7 +108,7 @@ const updateAdminSettings = async (req, res) => {
     res.json(updated);
   } catch (error) {
     console.error("Update Settings Error:", error);
-    res.status(400).json({ message: process.env.NODE_ENV === "production" ? "Something went wrong. Please try again." : error.message });
+    res.status(400).json({ message: error.message || "Failed to update settings" });
   }
 };
 

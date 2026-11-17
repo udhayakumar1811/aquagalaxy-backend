@@ -53,7 +53,7 @@ const createDeliveryRule = async (req, res) => {
     const rule = await DeliveryRule.create(req.body);
     res.status(201).json(rule);
   } catch (error) {
-    res.status(400).json({ message: process.env.NODE_ENV === "production" ? "Something went wrong. Please try again." : error.message });
+    res.status(400).json({ message: error.message || "Failed to create delivery rule" });
   }
 };
 
@@ -72,7 +72,7 @@ const updateDeliveryRule = async (req, res) => {
     if (!rule) return res.status(404).json({ message: "Rule not found" });
     res.json(rule);
   } catch (error) {
-    res.status(400).json({ message: process.env.NODE_ENV === "production" ? "Something went wrong. Please try again." : error.message });
+    res.status(400).json({ message: error.message || "Failed to update delivery rule" });
   }
 };
 

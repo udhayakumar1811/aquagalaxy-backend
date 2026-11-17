@@ -71,7 +71,7 @@ const getProducts = async (req, res) => {
       total,
     });
   } catch (error) {
-    res.status(500).json({ message: process.env.NODE_ENV === "production" ? "Something went wrong. Please try again." : error.message });
+    res.status(500).json({ message: error.message || "Failed to fetch products" });
   }
 };
 
@@ -92,7 +92,7 @@ const getProductById = async (req, res) => {
       res.status(404).json({ message: "Product not found" });
     }
   } catch (error) {
-    res.status(500).json({ message: process.env.NODE_ENV === "production" ? "Something went wrong. Please try again." : error.message });
+    res.status(500).json({ message: error.message || "Failed to fetch product" });
   }
 };
 
@@ -115,8 +115,24 @@ const createProduct = async (req, res) => {
       if (req.body[field] !== undefined) data[field] = req.body[field];
     }
 
-    if (!data.category_id || !data.name || data.price === undefined || !data.image) {
-      return res.status(400).json({ message: "category_id, name, price and image are required" });
+    // Accept category_id, category, or categoryId seamlessly
+    const resolvedCatId = req.body.category_id || req.body.category || req.body.categoryId;
+    if (resolvedCatId) {
+      data.category_id = typeof resolvedCatId === "object" && resolvedCatId._id ? resolvedCatId._id : resolvedCatId;
+    }
+
+    if (!data.category_id) {
+      return res.status(400).json({ message: "category_id is required" });
+    }
+    if (!data.name || !String(data.name).trim()) {
+      return res.status(400).json({ message: "name is required" });
+    }
+    if (data.price === undefined || data.price === null || isNaN(Number(data.price))) {
+      return res.status(400).json({ message: "price is required" });
+    }
+    data.price = Number(data.price);
+    if (!data.image || !String(data.image).trim()) {
+      return res.status(400).json({ message: "image is required" });
     }
 
     const product = new Product(data);
@@ -124,7 +140,7 @@ const createProduct = async (req, res) => {
     logAdminAction(req.user, "product.created", createdProduct.name, { productId: createdProduct._id, price: createdProduct.price });
     res.status(201).json(createdProduct);
   } catch (error) {
-    res.status(400).json({ message: process.env.NODE_ENV === "production" ? "Something went wrong. Please try again." : error.message });
+    res.status(400).json({ message: error.message || "Failed to create product" });
   }
 };
 
@@ -144,6 +160,16 @@ const updateProduct = async (req, res) => {
       if (req.body[field] !== undefined) product[field] = req.body[field];
     }
 
+    // Accept category_id, category, or categoryId seamlessly
+    const resolvedCatId = req.body.category_id || req.body.category || req.body.categoryId;
+    if (resolvedCatId) {
+      product.category_id = typeof resolvedCatId === "object" && resolvedCatId._id ? resolvedCatId._id : resolvedCatId;
+    }
+
+    if (req.body.price !== undefined) {
+      product.price = Number(req.body.price);
+    }
+
     const updatedProduct = await product.save();
 
     if (req.body.qnt !== undefined && req.body.qnt !== stockBefore) {
@@ -156,7 +182,7 @@ const updateProduct = async (req, res) => {
 
     res.json(updatedProduct);
   } catch (error) {
-    res.status(400).json({ message: process.env.NODE_ENV === "production" ? "Something went wrong. Please try again." : error.message });
+    res.status(400).json({ message: error.message || "Failed to update product" });
   }
 };
 
@@ -174,7 +200,7 @@ const deleteProduct = async (req, res) => {
       res.status(404).json({ message: "Product not found" });
     }
   } catch (error) {
-    res.status(500).json({ message: process.env.NODE_ENV === "production" ? "Something went wrong. Please try again." : error.message });
+    res.status(500).json({ message: error.message || "Failed to delete product" });
   }
 };
 
