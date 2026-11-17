@@ -8,8 +8,9 @@ See `documentation/MASTER_REPORT.md` for the full audit history, current status,
 
 ```
 AquaGalaxy/
-├── backend/     Express API (MongoDB via Mongoose)
-├── frontend/    React 19 + Vite SPA
+├── backend/        Express API (MongoDB via Mongoose)
+├── frontend/       React 19 + Vite Web Application
+├── mobile/         React Native (Expo SDK 58) Mobile App (Android/iOS)
 └── documentation/
     └── MASTER_REPORT.md   Full audit + deployment report
 ```
@@ -40,7 +41,22 @@ npm run dev      # local dev server, proxies API calls to http://localhost:5000
 npm run build    # production build → dist/
 ```
 
-The API base URL is set in `frontend/src/config.js` (no environment variable is used) — it points at `http://localhost:5000` in dev and a hardcoded production backend URL otherwise. Update that literal if your backend's real domain differs.
+The API base URL is set in `frontend/src/config.js` (supports `VITE_API_URL` or defaults to `http://localhost:5000` in dev).
+
+## Mobile App (Expo / React Native) — local setup
+
+```bash
+cd mobile
+npm install
+npx expo start -c   # starts Metro bundler (scan QR code in Expo Go app)
+```
+
+The API base URL is set in `mobile/src/api/config.js` (supports `EXPO_PUBLIC_API_URL` or defaults to your live backend URL).
+To build Android APKs:
+```bash
+cd mobile
+eas build -p android --profile preview
+```
 
 ## Deployment
 
